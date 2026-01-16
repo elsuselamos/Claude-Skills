@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{pageTitle}}</title>
+  <!-- 自定义样式 -->
+  <style>
+    .layui-form-label {
+      width: 15% !important;
+      margin-left: 1%;
+    }
+    .layui-input-inline, .layui-input-block {
+      width: 33% !important;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 头部导航 -->
+<div class="layui-card-header layui-card">
+  <span class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">首页</a>
+    <a>{{moduleName}}</a>
+    <a><cite>{{pageName}}</cite></a>
+  </span>
+</div>
+
+<!-- 主要内容区 -->
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <!-- 详情表单 -->
+        <form class="layui-form layui-form-pane" lay-filter="detailForm">
+          <!-- 基础信息区域 -->
+          <fieldset class="layui-elem-field layui-field-title">
+            <legend>基础信息</legend>
+          </fieldset>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">ID</label>
+            <div class="layui-input-inline">
+              <input type="text" id="id" disabled class="layui-input">
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-inline">
+              <input type="text" id="name" disabled class="layui-input">
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">编码</label>
+            <div class="layui-input-inline">
+              <input type="text" id="code" disabled class="layui-input">
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline">
+              <input type="text" id="status" disabled class="layui-input">
+            </div>
+          </div>
+
+          <!-- 业务信息区域 -->
+          <fieldset class="layui-elem-field layui-field-title">
+            <legend>业务信息</legend>
+          </fieldset>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">{{fieldLabel1}}</label>
+            <div class="layui-input-inline">
+              <input type="text" id="{{fieldId1}}" disabled class="layui-input">
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">{{fieldLabel2}}</label>
+            <div class="layui-input-inline">
+              <input type="text" id="{{fieldId2}}" disabled class="layui-input">
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">{{fieldLabel3}}</label>
+            <div class="layui-input-inline">
+              <input type="text" id="{{fieldId3}}" disabled class="layui-input">
+            </div>
+          </div>
+
+          <!-- 时间信息区域 -->
+          <fieldset class="layui-elem-field layui-field-title">
+            <legend>时间信息</legend>
+          </fieldset>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">创建时间</label>
+            <div class="layui-input-inline">
+              <input type="text" id="createTime" disabled class="layui-input">
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">更新时间</label>
+            <div class="layui-input-inline">
+              <input type="text" id="updateTime" disabled class="layui-input">
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <button class="layui-btn layui-btn-primary" id="backBtn">
+                <i class="layui-icon layui-icon-return"></i> 返回列表
+              </button>
+              <button class="layui-btn" id="editBtn">
+                <i class="layui-icon layui-icon-edit"></i> 编辑
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['form','admin'], function(){
+  var form = layui.form
+    ,admin = layui.admin
+    ,$ = layui.$;
+
+  // 获取详情数据
+  admin.req({
+    type: 'get',
+    url: layui.setter.baseUrl + '/api/{{detailPath}}',
+    data: {id: layui.router().search.id},
+    success: function(res){
+      if(res.code == 0){
+        var data = res.data;
+
+        // 填充基础信息
+        $('#id').val(data.id);
+        $('#name').val(data.name);
+        $('#code').val(data.code);
+
+        // 状态显示
+        var statusText = '';
+        if(data.status == 0) {
+          statusText = '禁用';
+        } else if(data.status == 1) {
+          statusText = '启用';
+        } else {
+          statusText = '异常';
+        }
+        $('#status').val(statusText);
+
+        // 填充业务信息
+        $('#{{fieldId1}}').val(data.{{fieldId1}});
+        $('#{{fieldId2}}').val(data.{{fieldId2}});
+        $('#{{fieldId3}}').val(data.{{fieldId3}});
+
+        // 填充时间信息
+        if(data.createTime) {
+          $('#createTime').val(layui.util.toDateString(data.createTime, "yyyy-MM-dd HH:mm:ss"));
+        }
+        if(data.updateTime) {
+          $('#updateTime').val(layui.util.toDateString(data.updateTime, "yyyy-MM-dd HH:mm:ss"));
+        }
+      } else {
+        layer.alert(res.msg || '获取数据失败', {title: '错误提示'});
+      }
+    },
+    error: function(err){
+      layer.alert(JSON.stringify(err), {title: '错误提示'});
+    }
+  });
+
+  // 返回列表按钮
+  $('#backBtn').on('click', function(){
+    location.hash = '/{{listPath}}/';
+  });
+
+  // 编辑按钮
+  $('#editBtn').on('click', function(){
+    var id = $('#id').val();
+    location.href = layui.setter.baseLocal + "{{editPath}}/id=" + id;
+  });
+});
+</script>
+</body>
+</html>

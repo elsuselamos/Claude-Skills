@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{pageTitle}}</title>
+</head>
+<body>
+
+<!-- 头部导航 -->
+<div class="layui-card-header layui-card">
+  <span class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">首页</a>
+    <a>{{moduleName}}</a>
+    <a><cite>{{pageName}}</cite></a>
+  </span>
+</div>
+
+<!-- 主要内容区 -->
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <!-- 数据统计卡片（可选） -->
+        <div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">{{statTitle1}}</div>
+              <div class="layui-card-body" id="{{statId1}}">-</div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">{{statTitle2}}</div>
+              <div class="layui-card-body" id="{{statId2}}">-</div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">{{statTitle3}}</div>
+              <div class="layui-card-body" id="{{statId3}}">-</div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">{{statTitle4}}</div>
+              <div class="layui-card-body" id="{{statId4}}">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 搜索区域 -->
+        <div class="layui-row" style="margin-bottom:15px;">
+          <div class="layui-form" style="float:right;">
+            <div class="layui-form-item" style="margin:0;">
+              <!-- 搜索输入框 -->
+              <div class="layui-input-inline">
+                <input type="text" id="{{searchInputId}}" placeholder="{{searchPlaceholder}}" class="layui-input">
+              </div>
+              <!-- 下拉筛选（可选） -->
+              <div class="layui-input-inline">
+                <select id="{{selectId}}" lay-search>
+                  <option value="">全部</option>
+                  {{selectOptions}}
+                </select>
+              </div>
+              <!-- 搜索按钮 -->
+              <button id="search" class="layui-btn" data-type="reload">
+                <i class="layui-icon layui-icon-search"></i> 搜索
+              </button>
+              <!-- 重置按钮 -->
+              <button type="reset" class="layui-btn layui-btn-primary">
+                <i class="layui-icon layui-icon-refresh"></i> 重置
+              </button>
+            </div>
+          </div>
+          <!-- 新增按钮 -->
+          <div class="layui-btn-group" style="float:left;">
+            <button class="layui-btn layui-btn-normal" id="{{addBtnId}}">
+              <i class="layui-icon layui-icon-add-1"></i> {{addBtnText}}
+            </button>
+            <!-- 批量操作按钮 -->
+            <button class="layui-btn layui-btn-danger" id="{{batchDeleteBtnId}}">
+              <i class="layui-icon layui-icon-delete"></i> 批量删除
+            </button>
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <table id="{{tableId}}" lay-filter="{{tableId}}"></table>
+
+        <!-- 操作栏模板 -->
+        <script type="text/html" id="{{toolbarId}}">
+          <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+          <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+          {{# if(d.status == 1){ }}
+          <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</a>
+          {{# } }}
+        </script>
+
+        <!-- 状态模板 -->
+        <script type="text/html" id="{{statusTplId}}">
+          {{# if(d.status == 0){ }}
+            <span style="color: gray">禁用</span>
+          {{# } else if(d.status == 1){ }}
+            <span style="color: green">启用</span>
+          {{# } else { }}
+            <span style="color: red">异常</span>
+          {{# } }}
+        </script>
+
+        <!-- 时间格式化模板 -->
+        <script type="text/html" id="{{dateTplId}}">
+          {{ layui.util.toDateString(d.{{dateField}}, "yyyy-MM-dd HH:mm:ss") }}
+        </script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['table','util','admin','form','laydate'], function(){
+  var table = layui.table
+    ,$ = layui.$
+    ,form = layui.form
+    ,admin = layui.admin
+    ,element = layui.element
+    ,laydate = layui.laydate;
+
+  // 渲染导航
+  element.render('breadcrumb', 'breadcrumb');
+
+  // 日期选择器（可选）
+  laydate.render({
+    elem: '#dateRange',
+    range: true,
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  // 数据统计函数
+  var loadStatistics = function(){
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '/api/{{statisticsPath}}',
+      success: function(res){
+        if(res.code == 0){
+          $('#{{statId1}}').html(res.data.{{statField1}});
+          $('#{{statId2}}').html(res.data.{{statField2}});
+          $('#{{statId3}}').html(res.data.{{statField3}});
+          $('#{{statId4}}').html(res.data.{{statField4}});
+        }
+      }
+    });
+  };
+
+  // 渲染表格
+  table.render({
+    elem: '#{{tableId}}'
+    ,url: layui.setter.baseUrl + '/api/{{listPath}}'
+    ,where: {
+      access_token: layui.data(layui.setter.tableName).access_token
+    }
+    ,id: 'tableReload'
+    ,cols: [[
+      {type: 'checkbox', fixed: 'left'}
+      ,{field: 'id', title: 'ID', width: 80, sort: true}
+      ,{field: 'name', title: '名称'}
+      ,{field: 'status', title: '状态', templet: '#{{statusTplId}}'}
+      ,{field: 'createTime', title: '创建时间', templet: '#{{dateTplId}}'}
+      ,{field:'operation', title: '操作', toolbar: '#{{toolbarId}}', fixed: 'right', width: 200}
+    ]]
+    ,page: true
+    ,skin: 'line'
+    ,limit: 20
+    ,limits: [10, 20, 50, 100]
+    ,done: function(res){
+      // 表格渲染完成后加载统计数据
+      loadStatistics();
+    }
+  });
+
+  // 搜索重载
+  var $ = layui.$, active = {
+    reload: function(){
+      var searchValue = $('#{{searchInputId}}').val();
+      var selectValue = $('#{{selectId}}').val();
+
+      table.reload('tableReload', {
+        page: {
+          curr: 1
+        },
+        where: {
+          {{searchField}}: searchValue,
+          {{selectField}}: selectValue
+        }
+      });
+    }
+  };
+
+  $('#search').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+
+  // 监听工具条
+  table.on('tool({{tableId}})', function(obj){
+    var data = obj.data;
+    if(obj.event === 'detail'){
+      location.href = layui.setter.baseLocal + "{{detailPath}}/id=" + data.id;
+    } else if(obj.event === 'edit'){
+      location.href = layui.setter.baseLocal + "{{editPath}}/id=" + data.id;
+    } else if(obj.event === 'delete'){
+      layer.confirm('确定要删除吗？', function(index){
+        admin.req({
+          type: 'post',
+          url: layui.setter.baseUrl + '/api/{{deletePath}}',
+          data: {id: data.id},
+          success: function(res){
+            if(res.code == 0){
+              layer.msg(res.msg || '删除成功');
+              obj.del();
+            } else {
+              layer.msg(res.msg || '删除失败');
+            }
+          }
+        });
+        layer.close(index);
+      });
+    }
+  });
+
+  // 新增按钮
+  $('#{{addBtnId}}').on('click', function(){
+    location.href = layui.setter.baseLocal + "{{addPath}}";
+  });
+
+  // 批量删除
+  $('#{{batchDeleteBtnId}}').on('click', function(){
+    var checkStatus = table.checkStatus('{{tableId}}');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要删除的数据');
+      return;
+    }
+
+    layer.confirm('确定要删除选中的 ' + data.length + ' 条数据吗？', function(index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/{{batchDeletePath}}',
+        data: {ids: ids},
+        success: function(res){
+          if(res.code == 0){
+            layer.msg(res.msg || '删除成功');
+            table.reload('tableReload');
+          } else {
+            layer.msg(res.msg || '删除失败');
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  });
+
+  // 表单渲染
+  form.render();
+});
+</script>
+</body>
+</html>

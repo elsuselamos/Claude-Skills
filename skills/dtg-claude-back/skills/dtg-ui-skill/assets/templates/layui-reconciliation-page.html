@@ -1,0 +1,130 @@
+{#
+  对账管理页面模板
+  基于实际项目代码：x_mgr/src/views/reconciliation/pool/index.html
+
+  功能：
+  - 简洁搜索表单
+  - 数据表格配置
+  - 查看详情操作
+#}
+
+<div class="layui-card-header layui-card">
+  <span class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">首页</a>
+    <a><cite>{{pageTitle}}</cite></a>
+  </span>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <!-- 搜索表单 -->
+        <div class="layui-row" style="margin-bottom:15px;">
+          <div class="layui-form" style="float:right;">
+            <div class="layui-form-item" style="margin:0;">
+              {{searchFields}}
+              <button id="search" class="layui-btn" data-type="reload">搜索</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <table id="{{tableId}}" lay-filter="{{tableFilter}}"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 操作按钮模板 -->
+<script type="text/html" id="{{actionToolbarId}}">
+  {{actionButtons}}
+</script>
+
+<script>
+layui.use(['table', 'form', 'element'], function(){
+  var table = layui.table
+    ,$ = layui.$
+    ,form = layui.form
+    ,element = layui.element;
+
+  // 渲染面包屑导航
+  element.render('breadcrumb', 'breadcrumb');
+
+  // 状态显示模板函数
+  var tplStatus = function(d){
+    if(d.status == 0) {
+      return "未处理";
+    } else if(d.status == 1) {
+      return "<span style='color: green'>已处理</span>";
+    }
+    return d.status;
+  };
+
+  // 银行类型显示模板函数
+  var tplBankType = function(d){
+    if(d.bankType == 'wxpay') {
+      return "微信";
+    } else if(d.bankType == 'alipay') {
+      return "支付宝";
+    }
+    return d.bankType || '';
+  };
+
+  // 日期格式化模板函数
+  var tplDate = function(d){
+    return layui.util.toDateString(d.{{dateField}}, "yyyy-MM-dd");
+  };
+
+  // 表格渲染配置
+  table.render({
+    elem: '#{{tableId}}',
+    url: layui.setter.baseUrl + '{{dataUrl}}',
+    where: {
+      access_token: layui.data(layui.setter.tableName).access_token
+    },
+    id: '{{tableReloadId}}',
+    cols: [[
+      {{tableColumns}}
+    ]],
+    page: true,
+    skin: 'line'
+  });
+
+  // 搜索功能
+  var active = {
+    reload: function(){
+      var searchParams = {};
+      {{#each searchFields}}
+      searchParams.{{this.name}} = $('#{{this.id}}').val();
+      {{/each}}
+
+      table.reload('{{tableReloadId}}', {
+        page: { curr: 1 },
+        where: searchParams
+      });
+    }
+  };
+
+  $('#search').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+
+  // 行操作事件监听
+  table.on('tool({{tableFilter}})', function(obj){
+    var data = obj.data;
+
+    if(obj.event === 'detail'){
+      // 查看详情
+      location.href = layui.setter.baseLocal + "{{detailPath}}/id=" + data.id;
+    } else if(obj.event === 'process'){
+      // 处理
+      location.href = layui.setter.baseLocal + "{{processPath}}/id=" + data.id + "/handtype=" + data.handleType;
+    }
+  });
+});
+</script>

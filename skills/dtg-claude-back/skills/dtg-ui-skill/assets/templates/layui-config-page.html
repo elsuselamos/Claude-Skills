@@ -1,0 +1,185 @@
+{#
+  配置管理页面模板
+  基于实际项目代码：x_mgr/src/views/config/pay_passage_account/index.html
+
+  功能：
+  - 操作按钮区（新增、编辑等）
+  - 简单搜索表单
+  - 数据表格配置
+  - 状态显示模板
+  - 操作按钮模板
+#}
+
+<div class="layui-card-header layui-card">
+  <span class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">首页</a>
+    <a><cite>{{pageTitle}}</cite></a>
+  </span>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <!-- 操作按钮区 -->
+        <div class="layui-row">
+          <div class="layuiAdmin-btns" style="margin-bottom: 10px;">
+            {{#if showCreateButton}}
+            <button class="layui-btn" data-type="all" data-events="create">{{createButtonText}}</button>
+            {{/if}}
+            {{extraButtons}}
+          </div>
+        </div>
+
+        <!-- 搜索表单（可选） -->
+        {{#if showSearch}}
+        <div class="layui-row" style="margin-bottom:15px;">
+          <div class="layui-form" style="float:right;">
+            <div class="layui-form-item" style="margin:0;">
+              {{searchFields}}
+              <button id="search" class="layui-btn" data-type="reload">搜索</button>
+            </div>
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- 数据表格 -->
+        <table id="{{tableId}}" lay-filter="{{tableFilter}}"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 操作按钮模板 -->
+<script type="text/html" id="{{actionToolbarId}}">
+  {{actionButtons}}
+</script>
+
+<script>
+layui.use(['table', 'util', 'form', 'admin'], function(){
+  var table = layui.table
+    ,$ = layui.$
+    ,form = layui.form
+    ,element = layui.element
+    ,admin = layui.admin;
+
+  // 渲染面包屑导航
+  element.render('breadcrumb', 'breadcrumb');
+
+  // 获取路由参数
+  var router = layui.router();
+  var {{paramName}} = router.search.{{paramName}};
+
+  // 权限控制变量
+  var authEdit = true;
+  {{#if checkAuth}}
+  // 检查编辑权限
+  admin.req({
+    type: 'get',
+    url: layui.setter.baseUrl + '/mch_info/checkAuth',
+    data: {
+      access_token: layui.data(layui.setter.tableName).access_token,
+      authAction: '{{authAction}}'
+    },
+    success: function(res){
+      if(res.data == 'RET_SERVICE_PAGE_NO_AUTH'){
+        authEdit = false;
+        $(".layuiAdmin-btns .layui-btn").removeAttr("data-events");
+      }
+    }
+  });
+  {{/if}}
+
+  // 状态显示模板函数
+  var tplStatus = function(d){
+    if(d.status == 0) {
+      return "关闭";
+    }else if(d.status == 1) {
+      return "<span style='color: green'>开启</span>";
+    }
+    return d.status;
+  };
+
+  // 表格渲染配置
+  table.render({
+    elem: '#{{tableId}}',
+    url: layui.setter.baseUrl + '{{dataUrl}}',
+    where: {
+      access_token: layui.data(layui.setter.tableName).access_token{{#if hasParam}}, {{paramName}}: {{paramName}}{{/if}}
+    },
+    id: '{{tableReloadId}}',
+    cols: [[
+      {{tableColumns}}
+    ]],
+    page: true,
+    skin: 'line'
+  });
+
+  // 搜索功能
+  var active = {
+    reload: function(){
+      {{#if showSearch}}
+      var {{searchParamName}} = $('#{{searchFieldId}}').val();
+
+      table.reload('{{tableReloadId}}', {
+        page: { curr: 1 },
+        where: {
+          {{searchParamName}}: {{searchParamName}}
+        }
+      });
+      {{/if}}
+    },
+    create: function(othis, type){
+      location.href = layui.setter.baseLocal + "{{createPath}}/{{#if hasParam}}{{paramName}}=" + {{paramName}}{{/if}}";
+    }
+  };
+
+  $('.layuiAdmin-btns .layui-btn').on('click', function(){
+    var othis = $(this)
+      ,thisEvent = othis.data('events')
+      ,type = othis.data('type');
+    active[thisEvent] ? active[thisEvent].call(this, othis, type) : '';
+  });
+
+  $('#search').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+
+  // 行操作事件监听
+  table.on('tool({{tableFilter}})', function(obj){
+    var data = obj.data;
+
+    if(!authEdit){
+      layer.msg('没有操作权限', {icon: 2});
+      return;
+    }
+
+    if(obj.event === 'edit'){
+      location.href = layui.setter.baseLocal + "{{editPath}}/id=" + data.id;
+    } else if(obj.event === 'delete'){
+      layer.confirm('确定删除吗？', function(index){
+        admin.req({
+          type: 'post',
+          url: layui.setter.baseUrl + '{{deleteUrl}}',
+          data: { id: data.id },
+          success: function(res){
+            if(res.code == 0){
+              layer.close(index);
+              table.reload('{{tableReloadId}}');
+            }
+          }
+        });
+      });
+    } else if(obj.event === 'detail'){
+      location.href = layui.setter.baseLocal + "{{detailPath}}/id=" + data.id;
+    }
+    {{#extraEvents}}
+    {{extraEventCode}}
+    {{/extraEvents}}
+  });
+});
+</script>

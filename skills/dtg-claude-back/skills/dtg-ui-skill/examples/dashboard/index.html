@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>数据统计仪表板 - 示例</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../assets/layui.css" media="all">
+  <style>
+    /* 数据卡片样式 */
+    .layadmin-backlog-body {
+      display: block;
+      padding: 10px 15px;
+      background-color: #f8f8f8;
+      color: #333;
+      border-radius: 4px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .layadmin-backlog-body h3 {
+      font-size: 12px;
+      font-weight: normal;
+      color: #666;
+      padding-bottom: 5px;
+    }
+
+    .layadmin-backlog-body p cite {
+      font-style: normal;
+      font-size: 20px;
+      font-weight: bold;
+      color: #009688;
+    }
+
+    .layadmin-backlog-body:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layui-fluid">
+  <!-- 数据概览轮播 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">数据概览</div>
+        <div class="layui-card-body">
+          <div class="layui-carousel layadmin-carousel layadmin-backlog" id="dataCarousel">
+            <div carousel-item>
+              <ul class="layui-row layui-col-space10" id="dataCards">
+                <li class="layui-col-xs6 layui-col-sm3">
+                  <div class="layadmin-backlog-body">
+                    <h3>今日支付订单</h3>
+                    <p><cite id="todayOrderCount">0</cite></p>
+                  </div>
+                </li>
+                <li class="layui-col-xs6 layui-col-sm3">
+                  <div class="layadmin-backlog-body">
+                    <h3>今日支付金额</h3>
+                    <p><cite id="todayAmount">￥0</cite></p>
+                  </div>
+                </li>
+                <li class="layui-col-xs6 layui-col-sm3">
+                  <div class="layadmin-backlog-body">
+                    <h3>今日商户数</h3>
+                    <p><cite id="todayMchCount">0</cite></p>
+                  </div>
+                </li>
+                <li class="layui-col-xs6 layui-col-sm3">
+                  <div class="layadmin-backlog-body">
+                    <h3>平台收入</h3>
+                    <p><cite id="todayProfit">￥0</cite></p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ECharts 图表区域 -->
+  <div class="layui-row layui-col-space15">
+    <!-- 流量趋势图 -->
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">近7天交易趋势</div>
+        <div class="layui-card-body">
+          <div id="trendChart" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 支付方式分布 -->
+    <div class="layui-col-md6">
+      <div class="layui-card">
+        <div class="layui-card-header">支付方式分布</div>
+        <div class="layui-card-body">
+          <div id="paymentMethodChart" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 商户排行 -->
+    <div class="layui-col-md6">
+      <div class="layui-card">
+        <div class="layui-card-header">商户交易排行</div>
+        <div class="layui-card-body">
+          <div id="mchRankChart" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../../assets/layui.js"></script>
+<script>
+layui.use(['admin', 'carousel', 'echarts'], function(){
+  var $ = layui.$
+    ,admin = layui.admin
+    ,carousel = layui.carousel
+    ,element = layui.element
+    ,device = layui.device
+    ,echarts = layui.echarts;
+
+  // 轮播图配置
+  $('.layadmin-carousel').each(function(){
+    var othis = $(this);
+    carousel.render({
+      elem: this,
+      width: '100%',
+      arrow: 'none',
+      interval: othis.data('interval') || 5000,
+      autoplay: othis.data('autoplay') !== false,
+      trigger: (device.ios || device.android) ? 'click' : 'hover',
+      anim: othis.data('anim') || 'default'
+    });
+  });
+
+  // 初始化图表数组
+  var echartsApp = [];
+
+  // 图表配置
+  var chartOptions = [
+    // 交易趋势图
+    {
+      title: {
+        text: '近7天交易趋势',
+        x: 'center',
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: "{b}<br/>支付订单：{c0}单<br/>支付金额：￥{c1}"
+      },
+      legend: {
+        orient: 'horizontal',
+        x: 'center',
+        y: 'bottom',
+        data: ['支付订单', '支付金额']
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: ['7天前', '6天前', '5天前', '4天前', '3天前', '前天', '昨天']
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: '订单数',
+          position: 'left'
+        },
+        {
+          type: 'value',
+          name: '金额(元)',
+          position: 'right'
+        }
+      ],
+      series: [
+        {
+          name: '支付订单',
+          type: 'line',
+          smooth: true,
+          yAxisIndex: 0,
+          data: [120, 132, 101, 134, 90, 230, 210],
+          itemStyle: { normal: { areaStyle: { type: 'default' } } }
+        },
+        {
+          name: '支付金额',
+          type: 'line',
+          smooth: true,
+          yAxisIndex: 1,
+          data: [2200, 1820, 1910, 2340, 2900, 3300, 3100],
+          itemStyle: { normal: { areaStyle: { type: 'default' } } }
+        }
+      ]
+    },
+    // 支付方式分布
+    {
+      title: {
+        text: '支付方式分布',
+        x: 'center',
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: "{a} <br/>{b}: {c} ({d}%)"
+      },
+      legend: {
+        orient: 'vertical',
+        x: 'left',
+        data: ['支付宝', '微信支付', '银联', '其他']
+      },
+      series: [{
+        name: '支付方式',
+        type: 'pie',
+        radius: '55%',
+        center: ['50%', '50%'],
+        data: [
+          { value: 335, name: '支付宝' },
+          { value: 310, name: '微信支付' },
+          { value: 234, name: '银联' },
+          { value: 135, name: '其他' }
+        ]
+      }]
+    },
+    // 商户交易排行
+    {
+      title: {
+        text: '商户交易排行',
+        x: 'center',
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: "{b}<br/>交易金额：￥{c}"
+      },
+      xAxis: {
+        type: 'value',
+        boundaryGap: [0, 0.01]
+      },
+      yAxis: {
+        type: 'category',
+        data: ['商户A', '商户B', '商户C', '商户D', '商户E']
+      },
+      series: [{
+        name: '交易金额',
+        type: 'bar',
+        data: [18203, 23489, 29034, 104970, 131744],
+        itemStyle: {
+          normal: {
+            color: '#009688'
+          }
+        }
+      }]
+    }
+  ];
+
+  // 渲染图表函数
+  var renderChart = function(index){
+    var chartIds = ['trendChart', 'paymentMethodChart', 'mchRankChart'];
+    var elem = document.getElementById(chartIds[index]);
+
+    if(elem && echartsApp[index] === undefined){
+      echartsApp[index] = echarts.init(elem, layui.echartsTheme);
+      echartsApp[index].setOption(chartOptions[index]);
+
+      // 响应式调整
+      window.onresize = function(){
+        echartsApp[index].resize();
+      };
+    }
+  };
+
+  // 初始化所有图表
+  for(var i = 0; i < chartOptions.length; i++){
+    renderChart(i);
+  }
+
+  // 监听侧边伸缩，重新渲染图表
+  layui.admin.on('side', function(){
+    setTimeout(function(){
+      for(var i = 0; i < echartsApp.length; i++){
+        if(echartsApp[i]){
+          echartsApp[i].resize();
+        }
+      }
+    }, 300);
+  });
+
+  // 监听路由切换
+  layui.admin.on('hash(tab)', function(){
+    layui.router().path.join('') || renderChart(0);
+  });
+
+  // 加载数据卡片数据
+  function loadDashboardData() {
+    admin.req({
+      type: 'get',
+      url: '/api/statistics/dashboard', // 替换为实际 API 地址
+      success: function(res){
+        if(res.code == 0){
+          $('#todayOrderCount').html(res.data.todayOrderCount || 0);
+          $('#todayAmount').html('￥' + (res.data.todayAmount || 0));
+          $('#todayMchCount').html(res.data.todayMchCount || 0);
+          $('#todayProfit').html('￥' + (res.data.todayProfit || 0));
+        }
+      }
+    });
+  }
+
+  // 初始加载数据
+  loadDashboardData();
+
+  // 定时刷新数据（每30秒）
+  setInterval(loadDashboardData, 30000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!-- 企业级搜索表单模板 -->
+<!-- 使用方式：复制到列表页面的搜索区域，根据需求修改字段 -->
+
+<div class="layui-row" style="margin-bottom:15px;">
+  <form class="layui-form" id="searchForm" lay-filter="searchForm">
+    <div class="layui-form-item">
+
+      <!-- 文本搜索 -->
+      <div class="layui-inline">
+        <label class="layui-form-label">关键字</label>
+        <div class="layui-input-inline">
+          <input type="text" name="keyword" placeholder="输入名称/编码" class="layui-input">
+        </div>
+      </div>
+
+      <!-- 下拉选择 -->
+      <div class="layui-inline">
+        <label class="layui-form-label">状态</label>
+        <div class="layui-input-inline">
+          <select name="status">
+            <option value="">全部</option>
+            <option value="1">启用</option>
+            <option value="0">禁用</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 下拉选择（可搜索） -->
+      <div class="layui-inline">
+        <label class="layui-form-label">商户</label>
+        <div class="layui-input-inline">
+          <select name="mchId" lay-search>
+            <option value="">全部</option>
+            {{mchOptions}}
+          </select>
+        </div>
+      </div>
+
+      <!-- 日期范围选择 -->
+      <div class="layui-inline">
+        <label class="layui-form-label">创建时间</label>
+        <div class="layui-input-inline">
+          <input type="text" name="createTimeRange" id="createTimeRange" placeholder="选择时间范围" class="layui-input">
+        </div>
+      </div>
+
+      <!-- 日期选择器（开始） -->
+      <div class="layui-inline">
+        <label class="layui-form-label">开始日期</label>
+        <div class="layui-input-inline">
+          <input type="text" name="createTimeStart" id="createTimeStart" placeholder="开始日期" class="layui-input">
+        </div>
+      </div>
+
+      <!-- 日期选择器（结束） -->
+      <div class="layui-inline">
+        <label class="layui-form-label">结束日期</label>
+        <div class="layui-input-inline">
+          <input type="text" name="createTimeEnd" id="createTimeEnd" placeholder="结束日期" class="layui-input">
+        </div>
+      </div>
+
+      <!-- 日期时间选择器 -->
+      <div class="layui-inline">
+        <label class="layui-form-label">交易时间</label>
+        <div class="layui-input-inline">
+          <input type="text" name="tradeTimeRange" id="tradeTimeRange" placeholder="选择时间范围" class="layui-input">
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="layui-inline">
+        <button type="button" class="layui-btn" id="searchBtn">
+          <i class="layui-icon layui-icon-search"></i> 搜索
+        </button>
+        <button type="reset" class="layui-btn layui-btn-primary">
+          <i class="layui-icon layui-icon-refresh"></i> 重置
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<script>
+layui.use(['form', 'laydate'], function(){
+  var form = layui.form;
+  var laydate = layui.laydate;
+
+  // 日期范围选择器
+  laydate.render({
+    elem: '#createTimeRange',
+    range: '~',
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  // 日期时间范围选择器
+  laydate.render({
+    elem: '#tradeTimeRange',
+    type: 'datetime',
+    range: '~',
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  // 日期选择器（开始）
+  laydate.render({
+    elem: '#createTimeStart',
+    type: 'datetime',
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  // 日期选择器（结束）
+  laydate.render({
+    elem: '#createTimeEnd',
+    type: 'datetime',
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  // 搜索按钮
+  $('#searchBtn').on('click', function(){
+    var formData = form.val('searchForm');
+
+    // 处理日期范围
+    if(formData.createTimeRange) {
+      var times = formData.createTimeRange.split('~');
+      formData.createTimeStart = times[0].trim();
+      formData.createTimeEnd = times[1] ? times[1].trim() : '';
+      delete formData.createTimeRange;
+    }
+
+    // 重载表格
+    table.reload('tableReload', {
+      page: {curr: 1},
+      where: formData
+    });
+  });
+
+  form.render();
+});
+</script>

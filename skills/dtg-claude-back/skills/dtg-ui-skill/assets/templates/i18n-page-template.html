@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title i18ndata="module:page.title">页面标题</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../../layui/css/layui.css" media="all">
+</head>
+<body>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="" i18ndata="module:page.home">主页</a>
+        <a><cite i18ndata="module:page.management">模块管理</cite></a>
+        <a><cite i18ndata="module:page.title">页面标题</cite></a>
+    </div>
+</div>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" i18ndata="module:page.searchTitle">查询条件</div>
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="search-form">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label" i18ndata="module:page.fieldName">字段名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="fieldName" id="fieldNameInput"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label" i18ndata="module:page.dateRange">日期范围</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="dateRange" id="dateRange" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="search-submit"
+                                i18ndata="module:button.search">查询</button>
+                        <button type="reset" class="layui-btn layui-btn-primary"
+                                i18ndata="module:button.reset">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span i18ndata="module:page.dataList">数据列表</span>
+            <div class="layui-btn-group layui-fr">
+                <button class="layui-btn layui-btn-sm" lay-event="add"
+                        i18ndata="module:button.add">新增</button>
+                <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="export"
+                        i18ndata="module:button.export">导出</button>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <!-- 数据表格 -->
+            <table id="data-table" lay-filter="data-table"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 操作列模板 -->
+<script type="text/html" id="action-tpl">
+    <a class="layui-btn layui-btn-xs" lay-event="edit" i18ndata="module:button.edit">编辑</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"
+       i18ndata="module:button.delete">删除</a>
+</script>
+
+<script>
+    // 初始化国际化，加载需要的模块
+    initializeI18n(['module', 'common', 'index', 'layout']);
+
+    layui.use(['admin', 'form', 'table', 'laydate'], function () {
+        var form = layui.form
+            , $ = layui.$
+            , table = layui.table
+            , admin = layui.admin
+            , laydate = layui.laydate
+            , layer = layui.layer
+            , element = layui.element;
+
+        // 渲染导航
+        element.render('breadcrumb', 'breadcrumb');
+
+        // 设置占位符国际化
+        $('#fieldNameInput').attr('placeholder',
+            translateMessageByPath("module:page.fieldNamePlaceholder", "请输入字段名称")
+        );
+
+        // 日期选择器
+        laydate.render({
+            elem: '#dateRange',
+            type: 'datetime',
+            range: true
+        });
+
+        // 数据表格
+        table.render({
+            elem: '#data-table'
+            , url: layui.setter.baseUrl + '/api/list' // 数据接口
+            , type: 'get'
+            , page: true // 开启分页
+            , cols: [[
+                {type: 'checkbox', fixed: 'left'}
+                , {field: 'id', title: '<span i18ndata="module:table.id">ID</span>', width: 80}
+                , {field: 'name', title: '<span i18ndata="module:table.name">名称</span>'}
+                , {field: 'status', title: '<span i18ndata="module:table.status">状态</span>'}
+                , {field: 'createTime', title: '<span i18ndata="module:table.createTime">创建时间</span>'}
+                , {fixed: 'right', title: '<span i18ndata="module:table.action">操作</span>', toolbar: '#action-tpl', width: 150}
+            ]]
+            , done: function (res, curr, count) {
+                // 表格渲染完成后更新国际化文本
+                setTimeout(function () {
+                    updateI18nfortable();
+                }, 100);
+            }
+        });
+
+        // 监听搜索
+        form.on('submit(search-submit)', function (data) {
+            table.reload('data-table', {
+                where: data.field,
+                page: {curr: 1}
+            });
+            return false;
+        });
+
+        // 监听工具条事件
+        table.on('tool(data-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                editItem(data);
+            } else if (obj.event === 'delete') {
+                deleteItem(data);
+            }
+        });
+
+        // 新增
+        $('body').on('click', '[lay-event="add"]', function () {
+            editItem();
+        });
+
+        // 导出
+        $('body').on('click', '[lay-event="export"]', function () {
+            admin.req({
+                type: 'get',
+                url: layui.setter.baseUrl + '/api/export',
+                error: function (err) {
+                    layer.alert(err.msg, {
+                        title: translateMessageByPath("common:prompt.error", '错误提示')
+                    });
+                },
+                success: function (res) {
+                    if (res.code === 0) {
+                        layer.msg(translateMessageByPath("common:prompt.success", '成功'));
+                    }
+                }
+            });
+        });
+
+        // 编辑/新增
+        function editItem(data) {
+            var title = data
+                ? translateMessageByPath("module:page.editTitle", '编辑')
+                : translateMessageByPath("module:page.addTitle", '新增');
+
+            admin.popup({
+                title: title
+                , area: ['500px', '400px']
+                , id: 'edit-popup'
+                , success: function (layero, index) {
+                    // 编辑表单内容
+                    var html = '<form class="layui-form" lay-filter="edit-form" style="padding: 20px;">';
+                    html += '<div class="layui-form-item">';
+                    html += '<label class="layui-form-label" i18ndata="module:form.name">名称</label>';
+                    html += '<div class="layui-input-block">';
+                    html += '<input type="text" name="name" lay-verify="required" placeholder="" class="layui-input">';
+                    html += '</div></div>';
+                    html += '<div class="layui-form-item">';
+                    html += '<div class="layui-input-block">';
+                    html += '<button class="layui-btn" lay-submit lay-filter="save-submit" i18ndata="module:button.save">保存</button>';
+                    html += '<button type="button" class="layui-btn layui-btn-primary" i18ndata="module:button.cancel">取消</button>';
+                    html += '</div></div>';
+                    html += '</form>';
+
+                    $('#layuiadmin' + index).children('.layui-layer-content').html(html);
+
+                    // 更新弹窗内的国际化文本
+                    setTimeout(function () {
+                        updateI18nfortable();
+                        form.render();
+                        if (data) {
+                            form.val('edit-form', data);
+                        }
+                    }, 50);
+
+                    // 监听保存
+                    form.on('submit(save-submit)', function (formData) {
+                        var url = data
+                            ? layui.setter.baseUrl + '/api/update'
+                            : layui.setter.baseUrl + '/api/add';
+
+                        admin.req({
+                            type: 'post',
+                            url: url,
+                            data: formData.field,
+                            error: function (err) {
+                                layer.alert(err.msg, {
+                                    title: translateMessageByPath("common:prompt.error", '错误提示')
+                                });
+                            },
+                            success: function (res) {
+                                if (res.code === 0) {
+                                    layer.msg(translateMessageByPath("common:prompt.success", '成功'));
+                                    layer.close(index);
+                                    table.reload('data-table');
+                                }
+                            }
+                        });
+                        return false;
+                    });
+
+                    // 取消按钮
+                    $('#layuiadmin' + index).on('click', '[i18ndata="module:button.cancel"]', function () {
+                        layer.close(index);
+                    });
+                }
+            });
+        }
+
+        // 删除
+        function deleteItem(data) {
+            layer.confirm(
+                translateMessageByPath("module:prompt.deleteConfirm", '确定要删除吗？'),
+                {icon: 3, title: translateMessageByPath("common:prompt.warning", '提示')},
+                function (index) {
+                    admin.req({
+                        type: 'post',
+                        url: layui.setter.baseUrl + '/api/delete',
+                        data: {id: data.id},
+                        error: function (err) {
+                            layer.alert(err.msg, {
+                                title: translateMessageByPath("common:prompt.error", '错误提示')
+                            });
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(translateMessageByPath("common:prompt.success", '成功'));
+                                layer.close(index);
+                                table.reload('data-table');
+                            }
+                        }
+                    });
+                }
+            );
+        }
+    });
+</script>
+</body>
+</html>

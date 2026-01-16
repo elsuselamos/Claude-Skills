@@ -1,0 +1,116 @@
+#!/bin/bash
+cd "$(dirname "$0")"
+
+# Parse arguments
+MODE="vector"
+AFTER=""
+BEFORE=""
+LIMIT="10"
+SOURCES="all"
+QUERY=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --help|-h)
+      cat <<'EOF'
+search-conversations - Search previous conversations from multiple sources
+
+USAGE:
+  search-conversations [OPTIONS] <query>
+
+MODES:
+  (default)      Vector similarity search (semantic)
+  --text         Exact string matching (for git SHAs, error codes)
+  --both         Combine vector + text search
+
+OPTIONS:
+  --after DATE   Only conversations after YYYY-MM-DD
+  --before DATE  Only conversations before YYYY-MM-DD
+  --limit N      Max results (default: 10)
+  --source S    Search specific source(s). Can be: claude-code, opencode, goose, memos, or all (default)
+  --help, -h     Show this help
+
+EXAMPLES:
+  # Search all sources
+  search-conversations "React Router authentication errors"
+
+  # Search specific source
+  search-conversations --source opencode "error handling"
+
+  # Find exact string in OpenCode sessions
+  search-conversations --source opencode --text "a1b2c3d4"
+
+  # Time filtering
+  search-conversations --after 2025-09-01 "refactoring"
+
+  # Search multiple sources
+  search-conversations --source opencode,goose "deployment"
+
+OUTPUT FORMAT:
+  For each result:
+  - Data source (opencode, goose, memos, claude-code)
+  - Project name and date
+  - Conversation summary (if available)
+  - Matched exchange with similarity % (vector mode)
+  - File path or memory ID
+
+  Example:
+  1. [opencode] [my-project, 2025-09-17]
+     Built authentication with JWT, implemented protected routes.
+
+     92% match: "How do I handle auth errors in loaders?"
+     ~/.local/share/opencode/storage/session/.../uuid.json:0-0
+
+QUERY TIPS:
+  - Use natural language: "How did we handle X?"
+  - Be specific: "React Router data loading" not "routing"
+  - Include context: "TypeScript type narrowing in guards"
+  - Use --source to filter by platform when needed
+
+SEE ALSO:
+  skills/remembering-conversations/INDEXING.md - Manage index
+  skills/remembering-conversations/SKILL.md - Usage guide
+EOF
+      exit 0
+      ;;
+    --text)
+      MODE="text"
+      shift
+      ;;
+    --both)
+      MODE="both"
+      shift
+      ;;
+    --after)
+      AFTER="$2"
+      shift 2
+      ;;
+    --before)
+      BEFORE="$2"
+      shift 2
+      ;;
+    --limit)
+      LIMIT="$2"
+      shift 2
+      ;;
+    --source)
+      SOURCES="$2"
+      shift 2
+      ;;
+    *)
+      QUERY="$QUERY $1"
+      shift
+      ;;
+  esac
+done
+
+QUERY=$(echo "$QUERY" | sed 's/^ *//')
+
+if [ -z "$QUERY" ]; then
+  echo "Usage: search-conversations [options] <query>"
+  echo "Try: search-conversations --help"
+  exit 1
+fi
+
+IFS=',' read -ra SOURCES_ARRAY <<< "$SOURCES"
+npx tsx src/search-cli.ts "$QUERY" "$MODE" "$LIMIT" "$AFTER" "$BEFORE" "${SOURCES_ARRAY[@]}"

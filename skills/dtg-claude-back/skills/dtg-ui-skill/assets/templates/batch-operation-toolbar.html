@@ -1,0 +1,402 @@
+<!--
+  企业级批量操作工具栏模板
+  基于 716+ 实际项目 HTML 文件分析
+  用于列表页面的批量操作功能
+-->
+
+<!-- 方案1: 标准批量操作工具栏（表格上方） -->
+<div class="layui-btn-group" id="batchToolbar" style="margin-bottom:10px;">
+  <button class="layui-btn layui-btn-normal" id="addBtn">
+    <i class="layui-icon layui-icon-add-1"></i> 新增
+  </button>
+  <button class="layui-btn layui-btn-danger" id="batchDeleteBtn">
+    <i class="layui-icon layui-icon-delete"></i> 批量删除
+  </button>
+  <button class="layui-btn" id="batchEnableBtn">
+    <i class="layui-icon layui-icon-ok"></i> 批量启用
+  </button>
+  <button class="layui-btn layui-btn-warm" id="batchDisableBtn">
+    <i class="layui-icon layui-icon-close"></i> 批量禁用
+  </button>
+  <button class="layui-btn layui-btn-primary" id="exportBtn">
+    <i class="layui-icon layui-icon-export"></i> 导出
+  </button>
+</div>
+
+<!-- 方案2: 紧凑工具栏（带统计） -->
+<div style="margin-bottom:10px;">
+  <div class="layui-btn-group" style="float:left;">
+    <button class="layui-btn layui-btn-normal" id="addBtn">
+      <i class="layui-icon layui-icon-add-1"></i> 新增
+    </button>
+    <button class="layui-btn layui-btn-danger" id="batchDeleteBtn">
+      <i class="layui-icon layui-icon-delete"></i> 批量删除
+    </button>
+    <button class="layui-btn layui-btn-primary" id="exportBtn">
+      <i class="layui-icon layui-icon-export"></i> 导出
+    </button>
+  </div>
+  <div style="float:right;">
+    <span style="color:#999;">已选: </span>
+    <span id="selectedCount" style="color:#1E9FFF;font-weight:bold;">0</span>
+    <span style="color:#999;"> 条</span>
+  </div>
+  <div style="clear:both;"></div>
+</div>
+
+<!-- 方案3: 表格头部的固定工具栏 -->
+<div class="layui-card">
+  <div class="layui-card-header">
+    <div class="layui-btn-group" id="batchToolbar">
+      <button class="layui-btn layui-btn-sm layui-btn-normal" id="addBtn">
+        <i class="layui-icon layui-icon-add-1"></i> 新增
+      </button>
+      <button class="layui-btn layui-btn-sm layui-btn-danger" id="batchDeleteBtn">
+        <i class="layui-icon layui-icon-delete"></i> 批量删除
+      </button>
+      <button class="layui-btn layui-btn-sm" id="batchEnableBtn">
+        <i class="layui-icon layui-icon-ok"></i> 启用
+      </button>
+      <button class="layui-btn layui-btn-sm layui-btn-warm" id="batchDisableBtn">
+        <i class="layui-icon layui-icon-close"></i> 禁用
+      </button>
+    </div>
+    <div style="float:right;">
+      <span>已选: <b id="selectedCount" style="color:#1E9FFF;">0</b> 条</span>
+    </div>
+  </div>
+  <div class="layui-card-body">
+    <!-- 表格在这里 -->
+    <table id="dataTable" lay-filter="dataTable"></table>
+  </div>
+</div>
+
+<!-- JavaScript 批量操作实现 -->
+<script>
+layui.use(['admin', 'table', 'layer'], function(){
+  var admin = layui.admin;
+  var table = layui.table;
+  var layer = layui.layer;
+  var $ = layui.$;
+
+  // ============================================
+  // 1. 批量删除
+  // ============================================
+  $('#batchDeleteBtn').on('click', function(){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要删除的数据');
+      return;
+    }
+
+    layer.confirm('确定要删除选中的 ' + data.length + ' 条数据吗？', {
+      icon: 3,
+      title: '批量删除确认'
+    }, function(index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/batchDelete',
+        data: {ids: ids},
+        success: function(res){
+          if(res.code == 0){
+            layer.msg('删除成功，共删除 ' + res.data.count + ' 条', {icon: 1});
+            table.reload('dataTable');
+          } else {
+            layer.msg(res.msg || '删除失败', {icon: 2});
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  });
+
+  // ============================================
+  // 2. 批量启用/禁用
+  // ============================================
+  $('#batchEnableBtn').on('click', function(){
+    batchUpdateStatus(1, '启用');
+  });
+
+  $('#batchDisableBtn').on('click', function(){
+    batchUpdateStatus(0, '禁用');
+  });
+
+  function batchUpdateStatus(status, actionName){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要' + actionName + '的数据');
+      return;
+    }
+
+    layer.confirm('确定要' + actionName + '选中的 ' + data.length + ' 条数据吗？', {
+      icon: 3,
+      title: actionName + '确认'
+    }, function(index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/batchUpdateStatus',
+        data: {
+          ids: ids,
+          status: status
+        },
+        success: function(res){
+          if(res.code == 0){
+            layer.msg(actionName + '成功', {icon: 1});
+            table.reload('dataTable');
+          } else {
+            layer.msg(res.msg || actionName + '失败', {icon: 2});
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  }
+
+  // ============================================
+  // 3. 批量导出
+  // ============================================
+  $('#exportBtn').on('click', function(){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      // 导出全部
+      layer.confirm('确定要导出全部数据吗？', {
+        icon: 3,
+        title: '导出确认'
+      }, function(index){
+        exportData({});
+        layer.close(index);
+      });
+    } else {
+      // 导出选中
+      layer.confirm('确定要导出选中的 ' + data.length + ' 条数据吗？', {
+        icon: 3,
+        title: '导出确认'
+      }, function(index){
+        var ids = data.map(function(item){ return item.id; }).join(',');
+        exportData({ids: ids});
+        layer.close(index);
+      });
+    }
+  });
+
+  function exportData(params){
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '/api/export',
+      data: params,
+      success: function(res){
+        if(res.code == 0){
+          // 下载文件
+          window.location.href = res.data.fileUrl;
+          layer.msg('导出成功', {icon: 1});
+        } else {
+          layer.msg(res.msg || '导出失败', {icon: 2});
+        }
+      }
+    });
+  }
+
+  // ============================================
+  // 4. 显示选中数量
+  // ============================================
+  table.on('checkbox(dataTable)', function(obj){
+    var checkStatus = table.checkStatus('dataTable');
+    $('#selectedCount').html(checkStatus.data.length);
+  });
+
+  // 全选/取消全选时也更新
+  table.on('checkbox(dataTable)', function(obj){
+    var checkStatus = table.checkStatus('dataTable');
+    $('#selectedCount').html(checkStatus.data.length);
+  });
+
+  // ============================================
+  // 5. 批量审核
+  // ============================================
+  $('#batchAuditBtn').on('click', function(){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要审核的数据');
+      return;
+    }
+
+    // 弹出审核备注输入框
+    layer.prompt({
+      title: '请输入审核备注',
+      formType: 2
+    }, function(value, index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/batchAudit',
+        data: {
+          ids: ids,
+          auditRemark: value
+        },
+        success: function(res){
+          if(res.code == 0){
+            layer.msg('审核成功', {icon: 1});
+            table.reload('dataTable');
+            layer.close(index);
+          } else {
+            layer.msg(res.msg || '审核失败', {icon: 2});
+          }
+        }
+      });
+    });
+  });
+
+  // ============================================
+  // 6. 批量发布
+  // ============================================
+  $('#batchPublishBtn').on('click', function(){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要发布的数据');
+      return;
+    }
+
+    layer.confirm('确定要发布选中的 ' + data.length + ' 条数据吗？', {
+      icon: 3,
+      title: '发布确认'
+    }, function(index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/batchPublish',
+        data: {ids: ids},
+        success: function(res){
+          if(res.code == 0){
+            layer.msg('发布成功', {icon: 1});
+            table.reload('dataTable');
+          } else {
+            layer.msg(res.msg || '发布失败', {icon: 2});
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  });
+
+  // ============================================
+  // 7. 批量下线
+  // ============================================
+  $('#batchOfflineBtn').on('click', function(){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要下线的数据');
+      return;
+    }
+
+    layer.confirm('确定要下线选中的 ' + data.length + ' 条数据吗？', {
+      icon: 3,
+      title: '下线确认'
+    }, function(index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/batchOffline',
+        data: {ids: ids},
+        success: function(res){
+          if(res.code == 0){
+            layer.msg('下线成功', {icon: 1});
+            table.reload('dataTable');
+          } else {
+            layer.msg(res.msg || '下线失败', {icon: 2});
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  });
+
+  // ============================================
+  // 8. 批量复制
+  // ============================================
+  $('#batchCopyBtn').on('click', function(){
+    var checkStatus = table.checkStatus('dataTable');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要复制的数据');
+      return;
+    }
+
+    if(data.length > 1){
+      layer.msg('一次只能复制一条数据');
+      return;
+    }
+
+    layer.confirm('确定要复制选中的数据吗？', {
+      icon: 3,
+      title: '复制确认'
+    }, function(index){
+      var id = data[0].id;
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '/api/copy',
+        data: {id: id},
+        success: function(res){
+          if(res.code == 0){
+            layer.msg('复制成功', {icon: 1});
+            table.reload('dataTable');
+          } else {
+            layer.msg(res.msg || '复制失败', {icon: 2});
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  });
+
+});
+</script>
+
+<!--
+  完整示例：订单列表批量操作
+
+  <div class="layui-btn-group" style="margin-bottom:10px;">
+    <button class="layui-btn layui-btn-normal" id="addBtn">
+      <i class="layui-icon layui-icon-add-1"></i> 新增订单
+    </button>
+    <button class="layui-btn layui-btn-danger" id="batchDeleteBtn">
+      <i class="layui-icon layui-icon-delete"></i> 批量删除
+    </button>
+    <button class="layui-btn" id="batchAuditBtn">
+      <i class="layui-icon layui-icon-ok"></i> 批量审核
+    </button>
+    <button class="layui-btn layui-btn-primary" id="exportBtn">
+      <i class="layui-icon layui-icon-export"></i> 导出Excel
+    </button>
+  </div>
+  <div style="margin-bottom:10px;">
+    <span style="color:#999;">已选: </span>
+    <span id="selectedCount" style="color:#1E9FFF;font-weight:bold;">0</span>
+    <span style="color:#999;"> 条</span>
+  </div>
+-->

@@ -1,0 +1,46 @@
+{
+  "prompt": {
+    "success": "Success",
+    "error": "Error",
+    "errorMsg": "Error Message",
+    "warning": "Warning",
+    "info": "Info",
+    "tryAgain": "Error, please try again",
+    "requestFailed": "Request failed",
+    "noData": "No data"
+  },
+  "button": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "reset": "Reset",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "close": "Close",
+    "submit": "Submit",
+    "back": "Back",
+    "return": "Return"
+  },
+  "status": {
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "message": {
+    "saveSuccess": "Saved successfully",
+    "deleteSuccess": "Deleted successfully",
+    "updateSuccess": "Updated successfully",
+    "operationSuccess": "Operation successful",
+    "operationFailed": "Operation failed"
+  }
+}

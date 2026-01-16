@@ -1,0 +1,37 @@
+{#
+  LayuiAdmin 后台管理页面模板
+  基于实际项目代码：x_mgr/src/views/order/pay/index.html
+
+  用途：作为 LayuiAdmin 后台管理系统的标准页面布局模板
+#}
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>{{pageTitle}}</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <div class="layui-tab-item layui-show">
+          {{pageContent}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['element'], function(){
+  var element = layui.element;
+
+  // 渲染面包屑导航
+  element.render('breadcrumb', 'breadcrumb');
+});
+</script>

@@ -1,0 +1,513 @@
+{#
+  Laytpl 实用工具函数和辅助模板集合
+  基于实际项目需求整理的常用代码片段
+
+  用途：提供可复用的 laytpl 模板片段和辅助函数
+#}
+
+<!-- ==================== 格式化辅助模板 ==================== -->
+
+<!-- 日期时间格式化模板 -->
+<script id="formatDateTime-tpl" type="text/html">
+  {{#
+    var timestamp = d[d.field || 'createTime'];
+    var date = new Date(timestamp);
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    var hours = String(date.getHours()).padStart(2, '0');
+    var minutes = String(date.getMinutes()).padStart(2, '0');
+    var seconds = String(date.getSeconds()).padStart(2, '0');
+  }}
+  {{= year }}-{{= month }}-{{= day }} {{= hours }}:{{= minutes }}:{{= seconds }}
+</script>
+
+<!-- 日期格式化模板（仅日期） -->
+<script id="formatDate-tpl" type="text/html">
+  {{#
+    var timestamp = d[d.field || 'createTime'];
+    var date = new Date(timestamp);
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+  }}
+  {{= year }}-{{= month }}-{{= day }}
+</script>
+
+<!-- 相对时间模板（如：3分钟前） -->
+<script id="formatRelativeTime-tpl" type="text/html">
+  {{#
+    var timestamp = d[d.field || 'createTime'];
+    var now = Date.now();
+    var diff = now - timestamp;
+    var minute = 60 * 1000;
+    var hour = 60 * minute;
+    var day = 24 * hour;
+
+    var result;
+    if (diff < minute) {
+      result = '刚刚';
+    } else if (diff < hour) {
+      result = Math.floor(diff / minute) + '分钟前';
+    } else if (diff < day) {
+      result = Math.floor(diff / hour) + '小时前';
+    } else if (diff < 7 * day) {
+      result = Math.floor(diff / day) + '天前';
+    } else {
+      var date = new Date(timestamp);
+      result = date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+    }
+  }}
+  {{= result }}
+</script>
+
+<!-- ==================== 金额格式化模板 ==================== -->
+
+<!-- 金额格式化（千分位 + 保留2位小数） -->
+<script id="formatAmount-tpl" type="text/html">
+  {{#
+    var amount = parseFloat(d[d.field || 'amount'] || 0);
+    var formatted = amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }}
+  <span style="color: {{= amount >= 0 ? 'green' : 'red' }}">
+    {{= amount >= 0 ? '' : '-' }}{{= d.currency || '' }}{{= formatted }}
+  </span>
+</script>
+
+<!-- 费率显示模板（百分比 + 单笔费用） -->
+<script id="formatRate-tpl" type="text/html">
+  {{#
+    var rate = d.rate;
+    var fee = d.fee;
+  }}
+  {{# if((rate == '' || rate == null) && (fee == '' || fee == null)) { }}
+    <span>未设置</span>
+  {{# } else { }}
+    {{# if(rate == '' || rate == null) { }}
+      <span style="color: blue">{{= fee }}/笔</span>
+    {{# } else { }}
+      <span style="color: blue">{{= rate }}%+{{= fee }}/笔</span>
+    {{# } }}
+  {{# } }}
+</script>
+
+<!-- ==================== 状态显示模板 ==================== -->
+
+<!-- 状态徽章模板（通用） -->
+<script id="statusBadge-tpl" type="text/html">
+  {{# if(d.status === 1) { }}
+    <span class="layui-badge layui-bg-green">启用</span>
+  {{# } else if(d.status === 0) { }}
+    <span class="layui-badge layui-bg-gray">禁用</span>
+  {{# } else if(d.status === 2) { }}
+    <span class="layui-badge layui-bg-orange">审核中</span>
+  {{# } else { }}
+    <span class="layui-badge layui-bg-red">异常</span>
+  {{# } }}
+</script>
+
+<!-- 自定义状态徽章模板 -->
+<script id="customStatusBadge-tpl" type="text/html">
+  {{#
+    var statusConfig = {
+      0: { text: '关闭', class: 'layui-bg-gray' },
+      1: { text: '开启', class: 'layui-bg-green' },
+      2: { text: '审核中', class: 'layui-bg-orange' },
+      3: { text: '已拒绝', class: 'layui-bg-red' }
+    };
+    var config = statusConfig[d.status] || { text: '未知', class: '' };
+  }}
+  <span class="layui-badge {{= config.class }}">{{= config.text }}</span>
+</script>
+
+<!-- 是/否 模板 -->
+<script id="yesNoBadge-tpl" type="text/html">
+  {{# if(d[d.field || 'isDefault'] === 1) { }}
+    <span class="layui-badge">是</span>
+  {{# } else { }}
+    <span class="layui-badge layui-bg-gray">否</span>
+  {{# } }}
+</script>
+
+<!-- ==================== 操作按钮模板 ==================== -->
+
+<!-- 基础操作按钮组 -->
+<script id="actionButtons-tpl" type="text/html">
+  <div class="layui-btn-group">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="detail">详情</a>
+    {{# if(d.status === 1) { }}
+      <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="disable">禁用</a>
+    {{# } else { }}
+      <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="enable">启用</a>
+    {{# } }}
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+  </div>
+</script>
+
+<!-- 带权限控制的操作按钮 -->
+<script id="actionButtonsWithAuth-tpl" type="text/html">
+  <div class="layui-btn-group">
+    {{# if(d.canEdit) { }}
+      <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    {{# } }}
+    {{# if(d.canView) { }}
+      <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="detail">详情</a>
+    {{# } }}
+    {{# if(d.canDelete) { }}
+      <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+    {{# } }}
+  </div>
+</script>
+
+<!-- 配置操作按钮（用于商户通道配置） -->
+<script id="configAction-tpl" type="text/html">
+  <a class="layui-btn layui-btn-sm" lay-event="config">配置</a>
+</script>
+
+<!-- ==================== 表格工具栏模板 ==================== -->
+
+<!-- 表格顶部工具栏 -->
+<script id="tableToolbar-tpl" type="text/html">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="add">
+      <i class="layui-icon layui-icon-add-1"></i> 添加
+    </button>
+    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="export">
+      <i class="layui-icon layui-icon-export"></i> 导出
+    </button>
+    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="batchDelete">
+      <i class="layui-icon layui-icon-delete"></i> 批量删除
+    </button>
+  </div>
+</script>
+
+<!-- ==================== 数据统计卡片模板 ==================== -->
+
+<!-- 数据卡片模板 -->
+<script id="dataCard-tpl" type="text/html">
+  {{# d.forEach(function(item) { }}
+  <div class="layui-col-md3 layui-col-sm6">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        {{= item.title }}
+        <span class="layui-badge layui-bg-gray layui-fr">{{= item.badge || '' }}</span>
+      </div>
+      <div class="layui-card-body" style="position: relative;">
+        <div style="font-size: 24px; color: #1E9FFF; font-weight: bold;">
+          {{= item.value }}
+        </div>
+        <div style="margin-top: 10px; color: #999;">
+          {{# item.trend >= 0 { }}
+            <i class="layui-icon layui-icon-up" style="color: #009688;"></i>
+            <span style="color: #009688;">{{= item.trend }}%</span>
+          {{# } else { }}
+            <i class="layui-icon layui-icon-down" style="color: #FF5722;"></i>
+            <span style="color: #FF5722;">{{= Math.abs(item.trend) }}%</span>
+          {{# } }}
+          <span>同比上周</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{# }); }}
+</script>
+
+<!-- ==================== 列表项模板 ==================== -->
+
+<!-- 简单列表项 -->
+<script id="listItem-tpl" type="text/html">
+  {{# d.forEach(function(item) { }}
+  <div class="layui-card">
+    <div class="layui-card-header">{{= item.title }}</div>
+    <div class="layui-card-body">
+      <p>{{= item.content }}</p>
+      <p class="layui-text-gray">{{= item.time }}</p>
+    </div>
+  </div>
+  {{# }); }}
+</script>
+
+<!-- ==================== 空状态模板 ==================== -->
+
+<!-- 空数据提示 -->
+<script id="emptyData-tpl" type="text/html">
+  <div style="padding: 50px 0; text-align: center; color: #999;">
+    <i class="layui-icon layui-icon-face-surprised" style="font-size: 48px;"></i>
+    <p style="margin-top: 10px;">{{= d.message || '暂无数据' }}</p>
+  </div>
+</script>
+
+<!-- ==================== JavaScript 辅助函数 ==================== -->
+
+<script>
+/**
+ * Laytpl 辅助函数集合
+ */
+var LaytplHelpers = {
+    /**
+     * 渲染模板到目标容器
+     * @param {string} templateId - 模板 ID
+     * @param {Object|Array} data - 渲染数据
+     * @param {string|HTMLElement} target - 目标容器选择器或元素
+     * @param {Function} callback - 渲染完成回调
+     */
+    render: function(templateId, data, target, callback) {
+        layui.use(['laytpl'], function() {
+            var laytpl = layui.laytpl;
+            var template = document.getElementById(templateId).innerHTML;
+            var targetEl = typeof target === 'string' ? document.querySelector(target) : target;
+
+            laytpl(template).render(data, function(html) {
+                if (targetEl) {
+                    targetEl.innerHTML = html;
+                }
+                if (typeof callback === 'function') {
+                    callback(html);
+                }
+            });
+        });
+    },
+
+    /**
+     * 渲染并返回 HTML 字符串
+     * @param {string} templateId - 模板 ID
+     * @param {Object|Array} data - 渲染数据
+     * @returns {string} 渲染后的 HTML
+     */
+    renderToString: function(templateId, data) {
+        layui.use(['laytpl'], function() {
+            var laytpl = layui.laytpl;
+            var template = document.getElementById(templateId).innerHTML;
+            return laytpl(template).render(data);
+        });
+    },
+
+    /**
+     * 批量渲染多个列表项
+     * @param {string} templateId - 单项模板 ID
+     * @param {Array} dataList - 数据数组
+     * @param {string|HTMLElement} target - 目标容器
+     */
+    renderList: function(templateId, dataList, target) {
+        layui.use(['laytpl'], function() {
+            var laytpl = layui.laytpl;
+            var template = document.getElementById(templateId).innerHTML;
+            var targetEl = typeof target === 'string' ? document.querySelector(target) : target;
+            var html = '';
+
+            dataList.forEach(function(item) {
+                html += laytpl(template).render(item);
+            });
+
+            if (targetEl) {
+                targetEl.innerHTML = html;
+            }
+        });
+    },
+
+    /**
+     * 创建表格列模板函数
+     * @param {string} templateId - 模板 ID
+     * @returns {Function} 表格列模板函数
+     */
+    createTableTemplate: function(templateId) {
+        return function(d) {
+            return layui.laytpl($('#' + templateId).html()).render(d);
+        };
+    },
+
+    /**
+     * 格式化日期时间
+     * @param {number} timestamp - 时间戳
+     * @param {string} format - 格式化模板
+     * @returns {string} 格式化后的日期
+     */
+    formatDate: function(timestamp, format) {
+        if (!timestamp) return '';
+        var date = new Date(timestamp);
+        var map = {
+            'yyyy': date.getFullYear(),
+            'MM': String(date.getMonth() + 1).padStart(2, '0'),
+            'dd': String(date.getDate()).padStart(2, '0'),
+            'HH': String(date.getHours()).padStart(2, '0'),
+            'mm': String(date.getMinutes()).padStart(2, '0'),
+            'ss': String(date.getSeconds()).padStart(2, '0')
+        };
+        var result = format || 'yyyy-MM-dd HH:mm:ss';
+        for (var key in map) {
+            result = result.replace(key, map[key]);
+        }
+        return result;
+    },
+
+    /**
+     * 格式化金额
+     * @param {number} amount - 金额
+     * @param {number} decimals - 小数位数
+     * @param {string} currency - 货币符号
+     * @returns {string} 格式化后的金额
+     */
+    formatAmount: function(amount, decimals, currency) {
+        var num = parseFloat(amount || 0);
+        var formatted = num.toFixed(decimals || 2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return (currency || '') + formatted;
+    },
+
+    /**
+     * 获取状态配置
+     * @param {Object} config - 状态配置对象
+     * @param {number} status - 当前状态值
+     * @returns {Object} 状态配置
+     */
+    getStatusConfig: function(config, status) {
+        return config[status] || { text: '未知', class: '' };
+    }
+};
+
+/**
+ * 动态下拉框生成器
+ */
+var DynamicSelect = {
+    /**
+     * 创建基础下拉框
+     * @param {Object} options - 配置选项
+     */
+    create: function(options) {
+        var defaults = {
+            containerId: '',
+            templateId: '',
+            url: '',
+            data: [],
+            valueField: 'value',
+            textField: 'text',
+            defaultValue: '',
+            laySearch: false,
+            layFilter: '',
+            width: '120px',
+            onChange: null
+        };
+
+        var opts = Object.assign({}, defaults, options);
+        layui.use(['form', 'laytpl'], function() {
+            var form = layui.form;
+            var laytpl = layui.laytpl;
+            var $ = layui.$;
+
+            // 动态生成模板
+            var templateId = opts.templateId || (opts.containerId + '-tpl');
+            var template = document.getElementById(templateId);
+
+            if (!template) {
+                var tempHtml = '<select id="' + opts.containerId + '" ' +
+                    (opts.laySearch ? 'lay-search ' : '') +
+                    (opts.layFilter ? 'lay-filter="' + opts.layFilter + '" ' : '') +
+                    'style="padding: 5px; border-radius: 4px; border: 1px solid #ddd; width: ' + opts.width + ';">' +
+                    '<option value="">全部</option>' +
+                    '{{# d.forEach(function(item) { }}' +
+                    '<option value="{{= item.' + opts.valueField + ' }}" {{ item.' + opts.valueField + ' === \'' + opts.defaultValue + '\' ? \'selected\' : \'\' }}>' +
+                    '{{= item.' + opts.textField + ' }}</option>' +
+                    '{{# }); }}' +
+                    '</select>';
+
+                var tempDiv = document.createElement('div');
+                tempDiv.innerHTML = '<script id="' + templateId + '" type="text/html">' + tempHtml + '<\/script>';
+                document.body.appendChild(tempDiv);
+            }
+
+            // 获取数据并渲染
+            if (opts.url) {
+                layui.admin.req({
+                    type: 'get',
+                    url: opts.url,
+                    success: function(res) {
+                        if (res.code === 0) {
+                            LaytplHelpers.render(templateId, res.data || [], '#' + opts.containerId, function() {
+                                form.render();
+                            });
+                        }
+                    }
+                });
+            } else if (opts.data.length > 0) {
+                LaytplHelpers.render(templateId, opts.data, '#' + opts.containerId, function() {
+                    form.render();
+                });
+            }
+
+            // 监听变化
+            if (opts.layFilter && typeof opts.onChange === 'function') {
+                form.on('select(' + opts.layFilter + ')', opts.onChange);
+            }
+        });
+    }
+};
+
+// 全局导出（可选）
+if (typeof window !== 'undefined') {
+    window.LaytplHelpers = LaytplHelpers;
+    window.DynamicSelect = DynamicSelect;
+}
+</script>
+
+<!-- ==================== 使用示例 ==================== -->
+
+<!--
+示例 1: 使用辅助函数渲染模板
+<script>
+layui.use(['jquery'], function() {
+    var $ = layui.$;
+
+    // 方式一: 使用辅助函数
+    LaytplHelpers.render('statusBadge-tpl', { status: 1 }, '#status-container');
+
+    // 方式二: 创建表格列模板
+    table.render({
+        cols: [[
+            { field: 'status', title: '状态', templet: LaytplHelpers.createTableTemplate('statusBadge-tpl') }
+        ]]
+    });
+
+    // 方式三: 格式化数据
+    console.log(LaytplHelpers.formatDate(Date.now(), 'yyyy-MM-dd'));
+    console.log(LaytplHelpers.formatAmount(12345.67, 2, '￥'));
+});
+</script>
+-->
+
+<!--
+示例 2: 使用动态下拉框生成器
+<script>
+layui.use(['form', 'table'], function() {
+    var form = layui.form;
+    var table = layui.table;
+
+    // 创建下拉框
+    DynamicSelect.create({
+        containerId: 'currencyFilter',
+        url: '/api/currencies',
+        valueField: 'code',
+        textField: 'name',
+        defaultValue: 'PHP',
+        laySearch: true,
+        layFilter: 'currencyChange',
+        onChange: function(data) {
+            table.reload('demoTable', {
+                where: { currency: data.value }
+            });
+        }
+    });
+});
+</script>
+-->
+
+<!--
+示例 3: 在 laytpl 模板中使用辅助函数
+<script type="text/html" id="custom-tpl">
+  {{#
+    var formatted = LaytplHelpers.formatAmount(d.amount, 2, d.currency);
+  }}
+  <span>{{= formatted }}</span>
+</script>
+-->

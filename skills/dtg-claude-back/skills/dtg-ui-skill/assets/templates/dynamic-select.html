@@ -1,0 +1,464 @@
+{#
+  动态下拉选择器模板
+  基于实际项目代码：
+  - x_mgr/src/views/merchant/agentpay_passage/list.html
+  - x_mgr/src/views/merchant/pay_passage/list.html
+
+  用途：动态生成下拉选择器，支持从 API 获取选项数据
+#}
+
+<!-- ============ 基础单选下拉框 ============ -->
+<!-- 使用场景：单一筛选条件 -->
+
+<!-- 容器 -->
+<div style="float: right;" id="currencyFilter-view" class="layui-form"></div>
+
+<!-- 模板 -->
+<script id="currencyFilter-tpl" type="text/html">
+    <select id="currencyFilter" lay-search lay-filter="currencySelectChange"
+            style="padding: 5px; border-radius: 4px; border: 1px solid #ddd; width: 120px;">
+        <option value="">全部</option>
+        {{# d.forEach(function(item, index) { }}
+        <option value="{{= item }}" {{ item === 'PHP' ? 'selected' : '' }}>{{= item }}</option>
+        {{# }); }}
+    </select>
+</script>
+
+<!-- JavaScript -->
+<script>
+layui.use(['form', 'laytpl'], function () {
+    var $ = layui.$
+        , admin = layui.admin
+        , form = layui.form
+        , laytpl = layui.laytpl;
+
+    const template = document.getElementById('currencyFilter-tpl').innerHTML;
+    const target = document.getElementById('currencyFilter-view');
+    const dataList = [];
+
+    // 获取数据
+    admin.req({
+        type: 'get',
+        url: layui.setter.baseUrl + '/config/common/getBalanceTypeList',
+        success: function (res) {
+            if (res.code === 0) {
+                var data = res.data;
+                Object.keys(data).forEach(key => {
+                    dataList.push(data[key]);
+                });
+
+                // 渲染模板
+                laytpl(template).render(dataList, function (html) {
+                    target.innerHTML = html;
+                    form.render(); // 重新渲染表单
+                });
+            }
+        }
+    });
+
+    // 监听选择变化
+    form.on('select(currencySelectChange)', function (data) {
+        const currencyValue = data.value === "" ? null : data.value;
+        table.reload("tableReload", {
+            where: {
+                currency: currencyValue
+            }
+        });
+    });
+});
+</script>
+
+
+<!-- ============ 多筛选条件组合 ============ -->
+<!-- 使用场景：页面顶部多个筛选器 -->
+
+<!-- 容器 -->
+<div class="layui-form" id="filterContainer-view"></div>
+
+<!-- 模板 -->
+<script id="filterContainer-tpl" type="text/html">
+    <div class="layui-form-item">
+        <!-- 状态筛选 -->
+        <div class="layui-inline">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline">
+                <select name="status" lay-filter="statusFilter">
+                    <option value="">全部</option>
+                    {{# d.statusList.forEach(function(item) { }}
+                    <option value="{{= item.value }}">{{= item.text }}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+
+        <!-- 类型筛选 -->
+        <div class="layui-inline">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-inline">
+                <select name="type" lay-filter="typeFilter">
+                    <option value="">全部</option>
+                    {{# d.typeList.forEach(function(item) { }}
+                    <option value="{{= item.value }}">{{= item.text }}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+
+        <!-- 币种筛选 -->
+        <div class="layui-inline">
+            <label class="layui-form-label">币种</label>
+            <div class="layui-input-inline">
+                <select name="currency" lay-filter="currencyFilter">
+                    <option value="">全部</option>
+                    {{# d.currencyList.forEach(function(item) { }}
+                    <option value="{{= item.value }}">{{= item.text }}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- JavaScript -->
+<script>
+layui.use(['form', 'laytpl', 'table'], function () {
+    var $ = layui.$
+        , admin = layui.admin
+        , form = layui.form
+        , laytpl = layui.laytpl
+        , table = layui.table;
+
+    const template = document.getElementById('filterContainer-tpl').innerHTML;
+    const target = document.getElementById('filterContainer-view');
+
+    // 筛选数据配置
+    var filterData = {
+        statusList: [
+            { value: 0, text: '禁用' },
+            { value: 1, text: '启用' }
+        ],
+        typeList: [
+            { value: 1, text: '单独' },
+            { value: 2, text: '轮询' },
+            { value: 3, text: '通道' }
+        ],
+        currencyList: []
+    };
+
+    // 获取币种列表
+    admin.req({
+        type: 'get',
+        url: layui.setter.baseUrl + '/config/common/getBalanceTypeList',
+        success: function (res) {
+            if (res.code === 0) {
+                var data = res.data;
+                Object.keys(data).forEach(key => {
+                    filterData.currencyList.push({
+                        value: data[key],
+                        text: data[key]
+                    });
+                });
+
+                // 渲染模板
+                laytpl(template).render(filterData, function (html) {
+                    target.innerHTML = html;
+                    form.render();
+                });
+            }
+        }
+    });
+
+    // 监听状态变化
+    form.on('select(statusFilter)', function (data) {
+        table.reload('tableReload', {
+            where: {
+                status: data.value
+            }
+        });
+    });
+
+    // 监听类型变化
+    form.on('select(typeFilter)', function (data) {
+        table.reload('tableReload', {
+            where: {
+                type: data.value
+            }
+        });
+    });
+
+    // 监听币种变化
+    form.on('select(currencyFilter)', function (data) {
+        table.reload('tableReload', {
+            where: {
+                currency: data.value
+            }
+        });
+    });
+});
+</script>
+
+
+<!-- ============ 带分组的选择器 ============ -->
+<!-- 使用场景：选项有层级关系 -->
+
+<!-- 容器 -->
+<div id="groupSelect-view" class="layui-form"></div>
+
+<!-- 模板 -->
+<script id="groupSelect-tpl" type="text/html">
+    <select name="category" lay-filter="categoryChange">
+        <option value="">请选择分类</option>
+        {{# d.forEach(function(group) { }}
+        <optgroup label="{{= group.groupName }}">
+            {{# group.items.forEach(function(item) { }}
+            <option value="{{= item.value }}">{{= item.text }}</option>
+            {{# }); }}
+        </optgroup>
+        {{# }); }}
+    </select>
+</script>
+
+<!-- JavaScript -->
+<script>
+layui.use(['form', 'laytpl'], function () {
+    var form = layui.form;
+    var laytpl = layui.laytpl;
+
+    var groupData = [
+        {
+            groupName: '支付方式',
+            items: [
+                { value: 'alipay', text: '支付宝' },
+                { value: 'wechat', text: '微信支付' },
+                { value: 'bank', text: '银行卡' }
+            ]
+        },
+        {
+            groupName: '代付方式',
+            items: [
+                { value: 'alipay_transfer', text: '支付宝转账' },
+                { value: 'bank_transfer', text: '银行转账' }
+            ]
+        }
+    ];
+
+    laytpl($('#groupSelect-tpl').html()).render(groupData, function(html) {
+        $('#groupSelect-view').html(html);
+        form.render();
+    });
+
+    form.on('select(categoryChange)', function(data) {
+        console.log('选中的分类:', data.value);
+    });
+});
+</script>
+
+
+<!-- ============ 级联选择器 ============ -->
+<!-- 使用场景：省市区三级联动 -->
+
+<!-- 容器 -->
+<div class="layui-form" id="cascader-view">
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label">省份</label>
+            <div class="layui-input-inline">
+                <select name="province" lay-filter="provinceChange">
+                    <option value="">请选择省份</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">城市</label>
+            <div class="layui-input-inline">
+                <select name="city" lay-filter="cityChange" disabled>
+                    <option value="">请选择城市</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">区县</label>
+            <div class="layui-input-inline">
+                <select name="district" lay-filter="districtChange" disabled>
+                    <option value="">请选择区县</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模板 -->
+<script id="option-tpl" type="text/html">
+    {{# d.forEach(function(item) { }}
+    <option value="{{= item.value }}">{{= item.text }}</option>
+    {{# }); }}
+</script>
+
+<!-- JavaScript -->
+<script>
+layui.use(['form', 'laytpl'], function () {
+    var $ = layui.$
+        , form = layui.form
+        , laytpl = layui.laytpl;
+
+    var areaData = {
+        province: [
+            { value: 'guangdong', text: '广东省' },
+            { value: 'jiangsu', text: '江苏省' }
+        ],
+        city: {
+            guangdong: [
+                { value: 'guangzhou', text: '广州市' },
+                { value: 'shenzhen', text: '深圳市' }
+            ],
+            jiangsu: [
+                { value: 'nanjing', text: '南京市' },
+                { value: 'suzhou', text: '苏州市' }
+            ]
+        },
+        district: {
+            guangzhou: [
+                { value: 'tianhe', text: '天河区' },
+                { value: 'yuexiu', text: '越秀区' }
+            ],
+            shenzhen: [
+                { value: 'futian', text: '福田区' },
+                { value: 'nanshan', text: '南山区' }
+            ]
+        }
+    };
+
+    // 渲染选项
+    function renderOptions(selectEl, data) {
+        var html = '<option value="">请选择</option>';
+        html += laytpl($('#option-tpl').html()).render(data);
+        selectEl.html(html);
+        form.render('select');
+    }
+
+    // 初始化省份
+    renderOptions($('select[name="province"]'), areaData.province);
+
+    // 省份变化
+    form.on('select(provinceChange)', function(data) {
+        var province = data.value;
+        var citySelect = $('select[name="city"]');
+        var districtSelect = $('select[name="district"]');
+
+        if (province) {
+            citySelect.removeAttr('disabled');
+            renderOptions(citySelect, areaData.city[province] || []);
+            districtSelect.attr('disabled', 'disabled').html('<option value="">请选择</option>');
+        } else {
+            citySelect.attr('disabled', 'disabled').html('<option value="">请选择</option>');
+            districtSelect.attr('disabled', 'disabled').html('<option value="">请选择</option>');
+        }
+        form.render('select');
+    });
+
+    // 城市变化
+    form.on('select(cityChange)', function(data) {
+        var city = data.value;
+        var districtSelect = $('select[name="district"]');
+
+        if (city) {
+            districtSelect.removeAttr('disabled');
+            renderOptions(districtSelect, areaData.district[city] || []);
+        } else {
+            districtSelect.attr('disabled', 'disabled').html('<option value="">请选择</option>');
+        }
+        form.render('select');
+    });
+});
+</script>
+
+
+<!-- ============ 搜索下拉框 ============ -->
+<!-- 使用场景：选项较多，需要搜索 -->
+
+<!-- 容器 -->
+<div id="searchSelect-view" class="layui-form"></div>
+
+<!-- 模板 -->
+<script id="searchSelect-tpl" type="text/html">
+    <select name="product" lay-search lay-filter="productChange">
+        <option value="">直接选择或搜索选择</option>
+        {{# d.forEach(function(item) { }}
+        <option value="{{= item.id }}" {{ item.selected ? 'selected' : '' }}>
+            {{= item.name }} ({{= item.code }})
+        </option>
+        {{# }); }}
+    </select>
+</script>
+
+<!-- JavaScript -->
+<script>
+layui.use(['form', 'laytpl'], function () {
+    var form = layui.form;
+    var laytpl = layui.laytpl;
+
+    var products = [
+        { id: 1, name: '微信支付', code: 'WXPay' },
+        { id: 2, name: '支付宝', code: 'Alipay' },
+        { id: 3, name: '银联支付', code: 'UnionPay' }
+    ];
+
+    laytpl($('#searchSelect-tpl').html()).render(products, function(html) {
+        $('#searchSelect-view').html(html);
+        form.render();
+    });
+
+    form.on('select(productChange)', function(data) {
+        console.log('选中的产品ID:', data.value);
+    });
+});
+</script>
+
+
+<!-- ============ 多选下拉框（复选框组）============ -->
+<!-- 使用场景：需要选择多个选项 -->
+
+<!-- 容器 -->
+<div id="multiSelect-view" class="layui-form"></div>
+
+<!-- 模板 -->
+<script id="multiSelect-tpl" type="text/html">
+    <div class="layui-input-block" style="margin-left: 0;">
+        {{# d.forEach(function(item) { }}
+        <input type="checkbox" name="{{= d.name }}" title="{{= item.text }}"
+               value="{{= item.value }}" {{ item.checked ? 'checked' : '' }}
+               lay-skin="primary">
+        {{# }); }}
+    </div>
+</script>
+
+<!-- JavaScript -->
+<script>
+layui.use(['form', 'laytpl'], function () {
+    var form = layui.form;
+    var laytpl = layui.laytpl;
+
+    var channels = [
+        { value: 'alipay', text: '支付宝', checked: true },
+        { value: 'wechat', text: '微信支付', checked: true },
+        { value: 'bank', text: '银行卡', checked: false }
+    ];
+
+    laytpl($('#multiSelect-tpl').html()).render({
+        name: 'channels',
+        items: channels
+    }, function(html) {
+        $('#multiSelect-view').html(html);
+        form.render('checkbox');
+    });
+
+    // 获取多选值
+    function getMultiSelectValues(name) {
+        var values = [];
+        $('input[name="' + name + '"]:checked').each(function() {
+            values.push($(this).val());
+        });
+        return values;
+    }
+});
+</script>

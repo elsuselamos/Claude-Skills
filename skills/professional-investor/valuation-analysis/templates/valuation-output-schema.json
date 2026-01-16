@@ -1,0 +1,436 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Valuation Analysis Output Schema",
+  "description": "第四階段：估值與安全邊際分析輸出格式",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "analysis_metadata",
+    "company_info",
+    "valuation_summary",
+    "detailed_analysis",
+    "recommendation"
+  ],
+  "properties": {
+    "analysis_metadata": {
+      "type": "object",
+      "description": "分析元數據",
+      "required": ["analysis_date", "analyst", "report_version"],
+      "properties": {
+        "analysis_date": {
+          "type": "string",
+          "format": "date",
+          "description": "分析日期 (YYYY-MM-DD)",
+          "example": "2026-01-15"
+        },
+        "analyst": {
+          "type": "string",
+          "description": "分析師名稱",
+          "example": "Senior Investor AI (30Y Experience)"
+        },
+        "report_version": {
+          "type": "string",
+          "description": "報告版本",
+          "example": "v1.0"
+        },
+        "reference_context": {
+          "type": "object",
+          "description": "引用前階段分析結論",
+          "properties": {
+            "macro_view": {
+              "type": "string",
+              "enum": ["expansion", "peak", "slowdown", "recession", "recovery", "soft-landing"],
+              "description": "總體經濟環境"
+            },
+            "industry_cycle": {
+              "type": "string",
+              "enum": ["early-cycle", "mid-cycle", "late-cycle", "downturn", "expansion"],
+              "description": "產業週期位置"
+            },
+            "company_quality": {
+              "type": "string",
+              "enum": ["excellent", "high", "medium", "low"],
+              "description": "公司基本面品質評級"
+            }
+          }
+        }
+      }
+    },
+
+    "company_info": {
+      "type": "object",
+      "description": "公司基本資訊",
+      "required": ["ticker", "company_name", "sector", "current_price"],
+      "properties": {
+        "ticker": {
+          "type": "string",
+          "description": "股票代碼",
+          "example": "TSLA"
+        },
+        "company_name": {
+          "type": "string",
+          "description": "公司名稱",
+          "example": "Tesla Inc."
+        },
+        "exchange": {
+          "type": "string",
+          "description": "交易所",
+          "example": "NASDAQ"
+        },
+        "sector": {
+          "type": "string",
+          "description": "所屬產業",
+          "example": "Automobiles / EV"
+        },
+        "business_model": {
+          "type": "string",
+          "enum": ["growth", "value", "cyclical", "defensive", "dividend"],
+          "description": "商業模式類型"
+        },
+        "current_price": {
+          "type": "number",
+          "description": "當前股價",
+          "example": 230.5
+        },
+        "currency": {
+          "type": "string",
+          "description": "幣別",
+          "example": "USD"
+        },
+        "market_cap": {
+          "type": "number",
+          "description": "市值（百萬計）",
+          "example": 737600
+        }
+      }
+    },
+
+    "valuation_summary": {
+      "type": "object",
+      "description": "估值總結（一頁摘要）",
+      "required": ["target_price_range", "current_rating", "margin_of_safety", "recommendation"],
+      "properties": {
+        "target_price_range": {
+          "type": "object",
+          "description": "目標價區間",
+          "required": ["conservative", "base_case", "optimistic"],
+          "properties": {
+            "conservative": {
+              "type": "number",
+              "description": "保守目標價",
+              "example": 180
+            },
+            "base_case": {
+              "type": "number",
+              "description": "中性目標價",
+              "example": 210
+            },
+            "optimistic": {
+              "type": "number",
+              "description": "樂觀目標價",
+              "example": 240
+            }
+          }
+        },
+        "current_rating": {
+          "type": "string",
+          "enum": ["severely_undervalued", "undervalued", "fairly_valued", "overvalued", "severely_overvalued"],
+          "description": "當前價格評級",
+          "example": "undervalued"
+        },
+        "margin_of_safety": {
+          "type": "object",
+          "description": "安全邊際",
+          "properties": {
+            "vs_base_case": {
+              "type": "number",
+              "description": "相對中性目標價的安全邊際 (%)",
+              "example": 12.5
+            },
+            "vs_conservative": {
+              "type": "number",
+              "description": "相對保守目標價的安全邊際 (%)",
+              "example": -5.2
+            }
+          }
+        },
+        "recommendation": {
+          "type": "object",
+          "description": "建議操作",
+          "required": ["action", "rationale"],
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": ["strong_buy", "buy", "accumulate", "hold", "reduce", "sell"],
+              "description": "操作建議",
+              "example": "accumulate"
+            },
+            "rationale": {
+              "type": "string",
+              "description": "一句話理由",
+              "example": "估值位於合理偏低區間，產業進入成長期，基本面穩健，適合逢低分批布局。"
+            },
+            "entry_zone": {
+              "type": "object",
+              "description": "建議進場區間",
+              "properties": {
+                "ideal_entry": {
+                  "type": "number",
+                  "description": "理想買點",
+                  "example": 180
+                },
+                "acceptable_entry": {
+                  "type": "number",
+                  "description": "可接受買點",
+                  "example": 200
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "detailed_analysis": {
+      "type": "object",
+      "description": "詳細估值分析",
+      "properties": {
+        "relative_valuation": {
+          "type": "object",
+          "description": "相對估值分析結果",
+          "properties": {
+            "current_multiples": {
+              "type": "object",
+              "description": "當前估值倍數",
+              "properties": {
+                "pe_ttm": {"type": "number", "example": 45},
+                "pe_forward": {"type": "number", "example": 35},
+                "peg": {"type": "number", "example": 1.4},
+                "pb": {"type": "number", "example": 8},
+                "ps": {"type": "number", "example": 7},
+                "ev_ebitda": {"type": "number", "example": 25}
+              }
+            },
+            "historical_comparison": {
+              "type": "object",
+              "description": "歷史估值比較",
+              "properties": {
+                "pe_percentile": {
+                  "type": "number",
+                  "description": "P/E 歷史分位數 (0-100)",
+                  "example": 35
+                },
+                "pb_percentile": {"type": "number", "example": 45},
+                "assessment": {
+                  "type": "string",
+                  "description": "歷史估值評估",
+                  "example": "當前 P/E 處於歷史 35 分位，屬於偏低區間，但成長率已較前期放緩。"
+                }
+              }
+            },
+            "peer_comparison": {
+              "type": "object",
+              "description": "同業估值比較",
+              "properties": {
+                "peer_average_pe": {"type": "number", "example": 32},
+                "peer_median_pe": {"type": "number", "example": 30},
+                "peer_average_peg": {"type": "number", "example": 1.3},
+                "relative_position": {
+                  "type": "string",
+                  "description": "相對同業位置",
+                  "example": "P/E 略高於同業中位數，但 PEG 具競爭力，反映成長性支撐。"
+                }
+              }
+            },
+            "implied_valuation_range": {
+              "type": "object",
+              "description": "相對估值法隱含價格區間",
+              "properties": {
+                "conservative": {"type": "number", "example": 175},
+                "base_case": {"type": "number", "example": 205},
+                "optimistic": {"type": "number", "example": 235}
+              }
+            }
+          }
+        },
+
+        "absolute_valuation": {
+          "type": "object",
+          "description": "絕對估值（DCF/DDM）分析結果",
+          "properties": {
+            "dcf_analysis": {
+              "type": "object",
+              "description": "DCF 估值結果",
+              "properties": {
+                "key_assumptions": {
+                  "type": "object",
+                  "description": "關鍵假設",
+                  "properties": {
+                    "revenue_cagr_5y": {"type": "number", "example": 15},
+                    "terminal_growth_rate": {"type": "number", "example": 2.5},
+                    "wacc": {"type": "number", "example": 10.0},
+                    "fcf_margin_target": {"type": "number", "example": 12}
+                  }
+                },
+                "valuation_scenarios": {
+                  "type": "object",
+                  "description": "三種情境估值",
+                  "properties": {
+                    "conservative": {
+                      "type": "object",
+                      "properties": {
+                        "intrinsic_value_per_share": {"type": "number", "example": 185},
+                        "key_assumptions_delta": {"type": "string", "example": "營收 CAGR 12%, WACC 11%, g 2%"}
+                      }
+                    },
+                    "base_case": {
+                      "type": "object",
+                      "properties": {
+                        "intrinsic_value_per_share": {"type": "number", "example": 215},
+                        "key_assumptions_delta": {"type": "string", "example": "營收 CAGR 15%, WACC 10%, g 2.5%"}
+                      }
+                    },
+                    "optimistic": {
+                      "type": "object",
+                      "properties": {
+                        "intrinsic_value_per_share": {"type": "number", "example": 245},
+                        "key_assumptions_delta": {"type": "string", "example": "營收 CAGR 18%, WACC 9.5%, g 3%"}
+                      }
+                    }
+                  }
+                },
+                "sensitivity_analysis": {
+                  "type": "object",
+                  "description": "敏感度分析",
+                  "properties": {
+                    "most_sensitive_variables": {
+                      "type": "array",
+                      "items": {"type": "string"},
+                      "example": ["terminal_growth_rate", "wacc", "revenue_cagr"]
+                    },
+                    "wacc_sensitivity": {
+                      "type": "string",
+                      "description": "WACC 變動 1% 對估值影響",
+                      "example": "WACC 上升 1% → 估值下降 15%"
+                    }
+                  }
+                }
+              }
+            },
+            "ddm_analysis": {
+              "type": "object",
+              "description": "DDM 估值結果（若適用）",
+              "properties": {
+                "applicable": {"type": "boolean", "example": false},
+                "intrinsic_value": {"type": "number", "nullable": true},
+                "reason_not_applicable": {
+                  "type": "string",
+                  "example": "公司不配息，DDM 不適用。"
+                }
+              }
+            }
+          }
+        },
+
+        "asset_valuation": {
+          "type": "object",
+          "description": "資產價值與下檔保護分析",
+          "properties": {
+            "adjusted_book_value": {
+              "type": "object",
+              "description": "調整後淨資產價值（ANAV）",
+              "properties": {
+                "book_value_per_share": {"type": "number", "example": 25},
+                "adjusted_nav_per_share": {"type": "number", "example": 32},
+                "key_adjustments": {
+                  "type": "string",
+                  "example": "土地重估 +30%、商譽排除 -5 元、應收折價 -2 元"
+                }
+              }
+            },
+            "liquidation_value": {
+              "type": "object",
+              "description": "清算價值",
+              "properties": {
+                "orderly_liquidation_per_share": {"type": "number", "example": 18},
+                "forced_liquidation_per_share": {"type": "number", "example": 12},
+                "assessment": {
+                  "type": "string",
+                  "example": "有序清算價值 18 元，提供下檔保護參考。"
+                }
+              }
+            },
+            "downside_protection": {
+              "type": "object",
+              "description": "下檔保護評估",
+              "properties": {
+                "current_price_vs_anav": {
+                  "type": "string",
+                  "example": "當前價 230 元 vs ANAV 32 元，P/B 7.2x，反映成長溢價。"
+                },
+                "downside_risk_assessment": {
+                  "type": "string",
+                  "example": "若盈利能力崩潰，資產價值提供有限保護，下檔風險約 -85%。"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "risk_factors": {
+      "type": "array",
+      "description": "估值風險因素",
+      "items": {
+        "type": "object",
+        "properties": {
+          "risk": {"type": "string", "example": "成長率不及預期"},
+          "probability": {"type": "string", "enum": ["low", "medium", "high"], "example": "medium"},
+          "impact_on_valuation": {"type": "string", "example": "目標價下修 15-20%"},
+          "mitigation": {"type": "string", "example": "密切追蹤季度交付數據與毛利率變化"}
+        }
+      }
+    },
+
+    "trigger_scenarios": {
+      "type": "array",
+      "description": "估值重評觸發條件",
+      "items": {
+        "type": "object",
+        "properties": {
+          "condition": {"type": "string", "example": "季度交付量連續兩季低於預期 10%"},
+          "action": {"type": "string", "example": "下修目標價至保守區間，降為持有評級"}
+        }
+      }
+    },
+
+    "conclusion": {
+      "type": "object",
+      "description": "結論與執行建議",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "綜合結論（2-3 句）",
+          "example": "綜合相對估值、DCF 與資產價值法，目標價區間 180-240 元，中性估值 210 元。當前價 230 元屬合理偏高，安全邊際有限，建議等待回調至 200 元以下再分批布局。"
+        },
+        "conviction_level": {
+          "type": "string",
+          "enum": ["very_high", "high", "medium", "low"],
+          "description": "分析信心水平",
+          "example": "high"
+        },
+        "time_horizon": {
+          "type": "string",
+          "description": "投資時間視野",
+          "example": "3-5 年"
+        },
+        "next_review_trigger": {
+          "type": "string",
+          "description": "下次重評觸發條件",
+          "example": "Q2 財報公布或股價回調至 200 元"
+        }
+      }
+    }
+  }
+}

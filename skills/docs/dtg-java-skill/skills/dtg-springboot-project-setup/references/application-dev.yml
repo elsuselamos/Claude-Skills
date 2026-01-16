@@ -1,0 +1,45 @@
+# application-dev.yml - 开发环境配置
+spring:
+  # MyBatis-Plus 配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/enterprise_dev?useSSL=false&serverTimezone=UTC
+    username: root
+    password: password
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # 实体扫描，多个package用逗号或者分号分隔
+  type-aliases-package: com.enterprise.entity
+  # 配置mapper的xml路径
+  mapper-locations: classpath:mapper/*.xml
+  # 全局配置
+  global-config:
+    # 数据库配置
+    db-config:
+      # 主键类型
+      id-type: AUTO
+      # 字段验证策略
+      field-strategy: NOT_EMPTY
+      # 逻辑删除值
+      logic-delete-value: 1
+      # 逻辑未删除值
+      logic-not-delete-value: 0
+    # Banner 配置
+    banner: false
+  # 配置类型处理器
+  type-handlers-package: com.enterprise.handler
+  # 配置sql打印
+  configuration:
+    # 开启驼峰转换
+    map-underscore-to-camel-case: true
+    # 打印sql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  level:
+    root: INFO
+    com.enterprise: DEBUG

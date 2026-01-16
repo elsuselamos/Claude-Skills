@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Layui 后台管理示例</title>
+  <link rel="stylesheet" href="./layui/css/layui.css">
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+<body class="layui-layout-body">
+
+<div class="layui-layout layui-layout-admin">
+  <!-- 头部 -->
+  <div class="layui-header">
+    <div class="layui-logo">Layui 后台</div>
+    <ul class="layui-nav layui-layout-left">
+      <li class="layui-nav-item"><a href="">控制台</a></li>
+      <li class="layui-nav-item"><a href="">商品管理</a></li>
+      <li class="layui-nav-item">
+        <a href="javascript:;">其它</a>
+        <dl class="layui-nav-child">
+          <dd><a href="">邮件管理</a></dd>
+          <dd><a href="">消息管理</a></dd>
+        </dl>
+      </li>
+    </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          贤心
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+          <dd><a href="">安全设置</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="">退了</a></li>
+    </ul>
+  </div>
+
+  <!-- 侧边栏 -->
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <ul class="layui-nav layui-nav-tree" lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a href="">所有商品</a>
+          <dl class="layui-nav-child">
+            <dd><a href="">列表一</a></dd>
+            <dd><a href="">列表二</a></dd>
+            <dd><a href="">列表三</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="">列表一</a></dd>
+            <dd><a href="">列表二</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item"><a href="">云市场</a></li>
+        <li class="layui-nav-item"><a href="">发布商品</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 主体内容 -->
+  <div class="layui-body">
+    <div style="padding: 15px;">
+      <!-- 数据统计卡片 -->
+      <div class="layui-row layui-col-space15">
+        <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">用户总数</div>
+            <div class="layui-card-body" style="text-align: center; font-size: 24px; color: #1E9FFF;">
+              1,234
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">订单总数</div>
+            <div class="layui-card-body" style="text-align: center; font-size: 24px; color: #FF5722;">
+              567
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">销售额</div>
+            <div class="layui-card-body" style="text-align: center; font-size: 24px; color: #5FB878;">
+              ¥12,345
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">访问量</div>
+            <div class="layui-card-body" style="text-align: center; font-size: 24px; color: #FFB800;">
+              8,901
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图表占位 -->
+      <div class="layui-row layui-col-space15" style="margin-top: 15px;">
+        <div class="layui-col-md6">
+          <div class="layui-card">
+            <div class="layui-card-header">访问趋势</div>
+            <div class="layui-card-body">
+              <div style="height: 300px; display: flex; align-items: center; justify-content: center; color: #999;">
+                图表区域（可集成 ECharts）
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md6">
+          <div class="layui-card">
+            <div class="layui-card-header">销售统计</div>
+            <div class="layui-card-body">
+              <div style="height: 300px; display: flex; align-items: center; justify-content: center; color: #999;">
+                图表区域（可集成 ECharts）
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="layui-row" style="margin-top: 15px;">
+        <div class="layui-col-md12">
+          <div class="layui-card">
+            <div class="layui-card-header">最新订单</div>
+            <div class="layui-card-body">
+              <table class="layui-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>商品</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>张三</td>
+                    <td>Layui 入门教程</td>
+                    <td>¥99.00</td>
+                    <td><span class="layui-badge layui-bg-green">已完成</span></td>
+                    <td>
+                      <a class="layui-btn layui-btn-xs">查看</a>
+                      <a class="layui-btn layui-btn-xs layui-btn-normal">编辑</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>李四</td>
+                    <td>Layui 进阶教程</td>
+                    <td>¥199.00</td>
+                    <td><span class="layui-badge layui-bg-orange">待发货</span></td>
+                    <td>
+                      <a class="layui-btn layui-btn-xs">查看</a>
+                      <a class="layui-btn layui-btn-xs layui-btn-normal">编辑</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>王五</td>
+                    <td>Layui 实战项目</td>
+                    <td>¥299.00</td>
+                    <td><span class="layui-badge layui-bg-blue">待付款</span></td>
+                    <td>
+                      <a class="layui-btn layui-btn-xs">查看</a>
+                      <a class="layui-btn layui-btn-xs layui-btn-normal">编辑</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="layui-footer">
+    © layui.com - 底部固定区域
+  </div>
+</div>
+
+<script src="./layui/layui.js"></script>
+<script>
+layui.use(['element', 'layer', 'table'], function(){
+  var element = layui.element;
+  var layer = layui.layer;
+  var table = layui.table;
+
+  // 初始化提示
+  layer.msg('欢迎使用 Layui 后台管理系统');
+
+  // 监听导航点击
+  element.on('nav(test)', function(elem){
+    console.log(elem);
+  });
+});
+</script>
+</body>
+</html>

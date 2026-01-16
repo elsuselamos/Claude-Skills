@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{pageTitle}}</title>
+</head>
+<body>
+
+<!-- 头部导航 - 带国际化 -->
+<div class="layui-card-header layui-card">
+  <span class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="" i18ndata="{{moduleName}}:list.home">首页</a>
+    <a i18ndata="{{moduleName}}:list.module">{{moduleName}}</a>
+    <a><cite i18ndata="{{moduleName}}:list.page">{{pageName}}</cite></a>
+  </span>
+</div>
+
+<!-- 主要内容区 -->
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this" i18ndata="{{moduleName}}:list.tab">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <!-- 数据统计卡片（可选） -->
+        <div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header" i18ndata="{{moduleName}}:list.stat1">{{statTitle1}}</div>
+              <div class="layui-card-body" id="{{statId1}}">-</div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header" i18ndata="{{moduleName}}:list.stat2">{{statTitle2}}</div>
+              <div class="layui-card-body" id="{{statId2}}">-</div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header" i18ndata="{{moduleName}}:list.stat3">{{statTitle3}}</div>
+              <div class="layui-card-body" id="{{statId3}}">-</div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header" i18ndata="{{moduleName}}:list.stat4">{{statTitle4}}</div>
+              <div class="layui-card-body" id="{{statId4}}">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 搜索区域 -->
+        <div class="layui-row" style="margin-bottom:15px;">
+          <div class="layui-form" style="float:right;">
+            <div class="layui-form-item" style="margin:0;">
+              <!-- 搜索输入框 -->
+              <div class="layui-input-inline">
+                <input type="text" id="{{searchInputId}}"
+                       class="layui-input">
+              </div>
+              <!-- 下拉筛选（可选） -->
+              <div class="layui-input-inline">
+                <select id="{{selectId}}" lay-search>
+                  <option value="" i18ndata="{{moduleName}}:list.all">全部</option>
+                  {{selectOptions}}
+                </select>
+              </div>
+              <!-- 搜索按钮 -->
+              <button id="search" class="layui-btn" data-type="reload"
+                      i18ndata="{{moduleName}}:button.search">
+                <i class="layui-icon layui-icon-search"></i> 搜索
+              </button>
+              <!-- 重置按钮 -->
+              <button type="reset" class="layui-btn layui-btn-primary"
+                      i18ndata="{{moduleName}}:button.reset">
+                <i class="layui-icon layui-icon-refresh"></i> 重置
+              </button>
+            </div>
+          </div>
+          <!-- 新增按钮 -->
+          <div class="layui-btn-group" style="float:left;">
+            <button class="layui-btn layui-btn-normal" id="{{addBtnId}}"
+                    i18ndata="{{moduleName}}:button.add">
+              <i class="layui-icon layui-icon-add-1"></i> {{addBtnText}}
+            </button>
+            <!-- 批量操作按钮 -->
+            <button class="layui-btn layui-btn-danger" id="{{batchDeleteBtnId}}"
+                    i18ndata="{{moduleName}}:button.batchDelete">
+              <i class="layui-icon layui-icon-delete"></i> 批量删除
+            </button>
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <table id="{{tableId}}" lay-filter="{{tableId}}"></table>
+
+        <!-- 操作栏模板 -->
+        <script type="text/html" id="{{toolbarId}}">
+          <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail"
+             i18ndata="{{moduleName}}:button.view">查看</a>
+          <a class="layui-btn layui-btn-xs" lay-event="edit"
+             i18ndata="{{moduleName}}:button.edit">编辑</a>
+          {{# if(d.status == 1){ }}
+          <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete"
+             i18ndata="{{moduleName}}:button.delete">删除</a>
+          {{# } }}
+        </script>
+
+        <!-- 状态模板 -->
+        <script type="text/html" id="{{statusTplId}}">
+          {{# if(d.status == 0){ }}
+            <span style="color: gray" i18ndata="{{moduleName}}:status.disabled">禁用</span>
+          {{# } else if(d.status == 1){ }}
+            <span style="color: green" i18ndata="{{moduleName}}:status.enabled">启用</span>
+          {{# } else { }}
+            <span style="color: red" i18ndata="{{moduleName}}:status.error">异常</span>
+          {{# } }}
+        </script>
+
+        <!-- 时间格式化模板 -->
+        <script type="text/html" id="{{dateTplId}}">
+          {{ layui.util.toDateString(d.{{dateField}}, "yyyy-MM-dd HH:mm:ss") }}
+        </script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================================
+// 国际化 (i18n) 支持步骤
+// ========================================
+// 1. 在页面脚本开始处调用 initializeI18n() 加载语言模块
+// 2. 在 HTML 元素上添加 i18ndata 属性
+// 3. 在 JavaScript 中使用 translateMessageByPath() 函数
+// 4. 在数据加载完成后调用 updateI18nfortable()
+
+// 初始化国际化 - 加载当前页面需要的语言模块
+initializeI18n(['{{moduleName}}', 'common', 'index', 'layout']);
+
+layui.use(['table','util','admin','form','laydate'], function(){
+  var table = layui.table
+    ,$ = layui.$
+    ,form = layui.form
+    ,admin = layui.admin
+    ,element = layui.element
+    ,laydate = layui.laydate
+    ,layer = layui.layer;
+
+  // 渲染导航
+  element.render('breadcrumb', 'breadcrumb');
+
+  // 设置占位符国际化
+  $('#{{searchInputId}}').attr('placeholder',
+    translateMessageByPath("{{moduleName}}:list.searchPlaceholder", "{{searchPlaceholder}}")
+  );
+
+  // 日期选择器（可选）
+  laydate.render({
+    elem: '#dateRange',
+    range: true,
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  // 数据统计函数
+  var loadStatistics = function(){
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '/api/{{statisticsPath}}',
+      success: function(res){
+        if(res.code == 0){
+          $('#{{statId1}}').html(res.data.{{statField1}});
+          $('#{{statId2}}').html(res.data.{{statField2}});
+          $('#{{statId3}}').html(res.data.{{statField3}});
+          $('#{{statId4}}').html(res.data.{{statField4}});
+        }
+      }
+    });
+  };
+
+  // 渲染表格
+  table.render({
+    elem: '#{{tableId}}'
+    ,url: layui.setter.baseUrl + '/api/{{listPath}}'
+    ,where: {
+      access_token: layui.data(layui.setter.tableName).access_token
+    }
+    ,id: 'tableReload'
+    ,cols: [[
+      {type: 'checkbox', fixed: 'left'}
+      ,{field: 'id', title: 'ID', width: 80, sort: true}
+      ,{field: 'name', title: '<span i18ndata="{{moduleName}}:table.name">名称</span>'}
+      ,{field: 'status', title: '<span i18ndata="{{moduleName}}:table.status">状态</span>', templet: '#{{statusTplId}}'}
+      ,{field: 'createTime', title: '<span i18ndata="{{moduleName}}:table.createTime">创建时间</span>', templet: '#{{dateTplId}}'}
+      ,{field:'operation', title: '<span i18ndata="{{moduleName}}:table.action">操作</span>', toolbar: '#{{toolbarId}}', fixed: 'right', width: 200}
+    ]]
+    ,page: true
+    ,skin: 'line'
+    ,limit: 20
+    ,limits: [10, 20, 50, 100]
+    ,done: function(res){
+      // 表格渲染完成后：
+      // 1. 更新国际化文本
+      // 2. 加载统计数据
+      setTimeout(function(){
+        updateI18nfortable();
+      }, 100);
+      loadStatistics();
+    }
+  });
+
+  // 搜索重载
+  var $ = layui.$, active = {
+    reload: function(){
+      var searchValue = $('#{{searchInputId}}').val();
+      var selectValue = $('#{{selectId}}').val();
+
+      table.reload('tableReload', {
+        page: {
+          curr: 1
+        },
+        where: {
+          {{searchField}}: searchValue,
+          {{selectField}}: selectValue
+        }
+      });
+    }
+  };
+
+  $('#search').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+
+  // 监听工具条
+  table.on('tool({{tableId}})', function(obj){
+    var data = obj.data;
+    if(obj.event === 'detail'){
+      location.href = layui.setter.baseLocal + "{{detailPath}}/id=" + data.id;
+    } else if(obj.event === 'edit'){
+      location.href = layui.setter.baseLocal + "{{editPath}}/id=" + data.id;
+    } else if(obj.event === 'delete'){
+      // 使用 translateMessageByPath 函数获取翻译文本
+      layer.confirm(
+        translateMessageByPath("{{moduleName}}:prompt.deleteConfirm", '确定要删除吗？'),
+        {
+          icon: 3,
+          title: translateMessageByPath("common:prompt.warning", '提示')
+        },
+        function(index){
+          admin.req({
+            type: 'post',
+            url: layui.setter.baseUrl + '/api/{{deletePath}}',
+            data: {id: data.id},
+            success: function(res){
+              if(res.code == 0){
+                layer.msg(res.msg || translateMessageByPath("{{moduleName}}:message.deleteSuccess", '删除成功'));
+                obj.del();
+              } else {
+                layer.msg(res.msg || translateMessageByPath("{{moduleName}}:message.deleteFailed", '删除失败'));
+              }
+            },
+            error: function(err){
+              layer.alert(err.msg, {
+                title: translateMessageByPath("common:prompt.error", '错误提示')
+              });
+            }
+          });
+          layer.close(index);
+        }
+      );
+    }
+  });
+
+  // 新增按钮
+  $('#{{addBtnId}}').on('click', function(){
+    location.href = layui.setter.baseLocal + "{{addPath}}";
+  });
+
+  // 批量删除
+  $('#{{batchDeleteBtnId}}').on('click', function(){
+    var checkStatus = table.checkStatus('{{tableId}}');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg(translateMessageByPath("{{moduleName}}:prompt.selectData", '请选择要删除的数据'));
+      return;
+    }
+
+    layer.confirm(
+      translateMessageByPath("{{moduleName}}:prompt.batchDeleteConfirm", '确定要删除选中的 {count} 条数据吗？', {count: data.length}),
+      {icon: 3, title: translateMessageByPath("common:prompt.warning", '提示')},
+      function(index){
+        var ids = data.map(function(item){ return item.id; }).join(',');
+
+        admin.req({
+          type: 'post',
+          url: layui.setter.baseUrl + '/api/{{batchDeletePath}}',
+          data: {ids: ids},
+          success: function(res){
+            if(res.code == 0){
+              layer.msg(res.msg || translateMessageByPath("{{moduleName}}:message.deleteSuccess", '删除成功'));
+              table.reload('tableReload');
+            } else {
+              layer.msg(res.msg || translateMessageByPath("{{moduleName}}:message.deleteFailed", '删除失败'));
+            }
+          },
+          error: function(err){
+            layer.alert(err.msg, {
+              title: translateMessageByPath("common:prompt.error", '错误提示')
+            });
+          }
+        });
+
+        layer.close(index);
+      }
+    );
+  });
+
+  // 表单渲染
+  form.render();
+});
+</script>
+</body>
+</html>

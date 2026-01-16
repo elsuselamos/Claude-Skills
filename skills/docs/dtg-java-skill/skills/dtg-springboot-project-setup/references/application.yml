@@ -1,0 +1,150 @@
+# application.yml - Spring Boot 2.7 + Dubbo 分布式微服务配置
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: user-management-service
+  profiles:
+    active: dev
+
+  # 数据库配置 (MyBatis-Plus)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:userdb}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Redis 配置
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000ms
+
+  # MongoDB 配置
+  data:
+    mongodb:
+      host: ${MONGODB_HOST:localhost}
+      port: ${MONGODB_PORT:27017}
+      database: ${MONGODB_DATABASE:logs}
+
+  # ActiveMQ 配置
+  activemq:
+    broker-url: tcp://${ACTIVEMQ_HOST:localhost}:${ACTIVEMQ_PORT:61616}
+    user: ${ACTIVEMQ_USER:admin}
+    password: ${ACTIVEMQ_PASSWORD:admin}
+
+  # 分页配置
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+
+# Dubbo 配置
+dubbo:
+  application:
+    name: ${spring.application.name}
+    version: 1.0.0
+    logger: slf4j
+  registry:
+    address: zookeeper://${ZK_HOST:localhost}:${ZK_PORT:2181}
+    timeout: 5000
+    group: dubbo-dev
+  protocol:
+    name: dubbo
+    port: ${DUBBO_PORT:20880}
+    threads: 200
+    heartbeat: 60000
+    accesslog: true
+    host: ${DUBBO_HOST:localhost}
+  provider:
+    timeout: 5000
+    retries: 0
+    delay: 0
+    version: 1.0.0
+    group: dubbo-dev
+  consumer:
+    timeout: 5000
+    retries: 2
+    check: false
+    version: 1.0.0
+    group: dubbo-dev
+  monitor:
+    protocol: registry
+  config-center:
+    protocol: zookeeper
+    address: zookeeper://${ZK_HOST:localhost}:${ZK_PORT:2181}
+    group: dubbo-dev
+    namespace: dubbo
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+  mapper-locations: classpath*:mapper/*.xml
+
+
+# 日志配置
+logging:
+  level:
+    com.enterprise: DEBUG
+    org.springframework.security: DEBUG
+    org.apache.dubbo: INFO
+    com.baomidou.mybatisplus: DEBUG
+    org.apache.ibatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{50}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{50}] - %msg%n"
+
+# OpenAPI 配置
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# 自定义配置
+app:
+  jwt:
+    secret: ${JWT_SECRET:mySecretKey}
+    expiration: ${JWT_EXPIRATION:86400000} # 24小时
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:/tmp/uploads}
+    max-size: ${FILE_MAX_SIZE:10MB}
+  dubbo:
+    version: 1.0.0
+    group: dubbo-dev
+    timeout: 5000

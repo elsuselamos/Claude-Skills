@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui 表单验证完整示例</title>
+    <link rel="stylesheet" href="../../../layui/css/layui.css">
+    <style>
+        .demo-container {
+            padding: 20px;
+        }
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+        }
+        .demo-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-left: 4px solid #009688;
+            padding-left: 10px;
+        }
+        .layui-form-label.required::after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+            font-size: 1.5em;
+        }
+        .rate-input {
+            width: 120px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="demo-container">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <h2>Layui 表单验证完整示例</h2>
+        </div>
+        <div class="layui-card-body">
+
+            <!-- 示例 1: 基础验证 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 1: 基础验证规则</div>
+                <form class="layui-form" lay-filter="basicForm">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">用户名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="username" lay-verify="required|username"
+                                   placeholder="4-20位字母、数字、下划线" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="password" id="password1"
+                                   lay-verify="required|password" placeholder="8-16位字母和数字组合" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">确认密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="confirmPassword"
+                                   lay-verify="required|confirmPassword" placeholder="再次输入密码" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="basicSubmit">提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 示例 2: 费率验证（基于实际项目）-->
+            <div class="demo-section">
+                <div class="demo-title">示例 2: 费率验证（需大于上级费率）</div>
+                <form class="layui-form" lay-filter="rateForm">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">代收费率固定</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="payRatesFixed" class="layui-input rate-input"
+                                   lay-verify="required|rate" data-parent-value="5.5"
+                                   min="0" max="100" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-form-mid" style="color: #999;">5.5 (上级)</div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">代收费率百分比</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="payRatesPercentage" class="layui-input rate-input"
+                                   lay-verify="required|rate" data-parent-value="0.5"
+                                   min="0" max="100" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-form-mid" style="color: #999;">0.5 (上级)</div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="rateSubmit">提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 示例 3: 金额范围验证 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 3: 金额范围验证</div>
+                <form class="layui-form" lay-filter="amountForm">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">交易金额</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="amount" lay-verify="required|amountRange"
+                                   data-min="0.01" data-max="50000" step="0.01"
+                                   placeholder="请输入金额" class="layui-input">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">范围：0.01 - 50000</div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="amountSubmit">提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 示例 4: 证件号码验证 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 4: 证件号码验证</div>
+                <form class="layui-form" lay-filter="idCardForm">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">身份证号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="idCard" lay-verify="idCard"
+                                   placeholder="请输入身份证号" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">银行卡号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="bankCard" lay-verify="bankCard"
+                                   placeholder="请输入银行卡号" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">统一社会信用代码</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="creditCode" lay-verify="creditCode"
+                                   placeholder="请输入统一社会信用代码" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="idCardSubmit">提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 示例 5: 联系方式验证 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 5: 联系方式验证</div>
+                <form class="layui-form" lay-filter="contactForm">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">手机号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="phone" lay-verify="required|phone"
+                                   placeholder="请输入手机号" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">邮箱</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="email" lay-verify="required|email"
+                                   placeholder="请输入邮箱" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">手机号或邮箱</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="phoneOrEmail" lay-verify="required|phoneOrEmail"
+                                   placeholder="请输入手机号或邮箱" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="contactSubmit">提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 示例 6: 完整商户表单（基于实际项目）-->
+            <div class="demo-section">
+                <div class="demo-title">示例 6: 完整商户表单（基于实际项目）</div>
+                <form class="layui-form layui-form-pane" lay-filter="merchantForm">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">商户名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" lay-verify="required|mchName"
+                                   placeholder="输入商户名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">用户名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="userName" lay-verify="required|userName"
+                                   placeholder="输入用户登录名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">登录密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="password" id="merchantPassword"
+                                   lay-verify="required|password"
+                                   placeholder="请输入新密码,8-16位的字母和数字组合"
+                                   autocomplete="new-password" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">资金密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="payPassword"
+                                   lay-verify="required|payPassword"
+                                   placeholder="请输入新密码,8-16位的字母和数字组合（结算申请使用）"
+                                   autocomplete="new-password" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label required">支付密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="apiPassword"
+                                   lay-verify="required|apiPassword"
+                                   placeholder="请输入新密码,8-16位的字母和数字组合（API串接使用）"
+                                   autocomplete="new-password" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="merchantSubmit">保存</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="../../../layui/layui.js"></script>
+<script>
+layui.use(['form', 'layer', 'jquery'], function() {
+    var form = layui.form;
+    var layer = layui.layer;
+    var $ = layui.$;
+
+    // ========== 定义验证规则 ==========
+
+    form.verify({
+        // 基础验证
+        nonempty: [/\S+/, '必填项不能为空'],
+
+        // 用户名：4-20位字母、数字、下划线
+        username: [
+            /^[a-zA-Z0-9_]{4,20}$/,
+            '用户名必须4-20位（字母、数字、下划线）'
+        ],
+
+        // 密码：8-16位字母和数字组合
+        password: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            '密码必须为8-16位的字母和数字组合'
+        ],
+
+        // 资金密码
+        payPassword: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            '资金密码必须为8-16位的字母和数字组合'
+        ],
+
+        // 支付密码
+        apiPassword: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            '支付密码必须为8-16位的字母和数字组合'
+        ],
+
+        // 商户名称
+        mchName: [
+            /^[\u4e00-\u9fa5a-zA-Z0-9\s]{2,50}$/,
+            '商户名称必须2-50位（中文、字母、数字、空格）'
+        ],
+
+        // 费率验证（基于实际项目）
+        rate: function(value, item) {
+            if (value) {
+                const rateValue = parseFloat(value);
+
+                // 检查费率范围
+                if (rateValue <= 0 || rateValue >= 100) {
+                    return '费率必须在0-100之间';
+                }
+
+                // 检查是否必须大于上级费率
+                const parentValue = parseFloat($(item).attr('data-parent-value'));
+                if (!isNaN(parentValue) && rateValue < parentValue) {
+                    return `费率需大于等于上级 ${parentValue}`;
+                }
+            }
+        },
+
+        // 金额范围验证
+        amountRange: function(value, item) {
+            if (value) {
+                const min = parseFloat($(item).attr('data-min'));
+                const max = parseFloat($(item).attr('data-max'));
+                const amount = parseFloat(value);
+
+                if (!isNaN(min) && amount < min) {
+                    return `金额不能小于 ${min}`;
+                }
+                if (!isNaN(max) && amount > max) {
+                    return `金额不能大于 ${max}`;
+                }
+            }
+        },
+
+        // 身份证号
+        idCard: [
+            /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/,
+            '请输入正确的身份证号'
+        ],
+
+        // 银行卡号
+        bankCard: [
+            /^[0-9]{16,19}$/,
+            '请输入正确的银行卡号'
+        ],
+
+        // 统一社会信用代码
+        creditCode: [
+            /^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$/,
+            '请输入正确的统一社会信用代码'
+        ],
+
+        // 手机号或邮箱
+        phoneOrEmail: function(value) {
+            if (value) {
+                const isPhone = /^1[3-9]\d{9}$/.test(value);
+                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+                if (!isPhone && !isEmail) {
+                    return '请输入正确的手机号或邮箱';
+                }
+            }
+        },
+
+        // 确认密码
+        confirmPassword: function(value, item) {
+            var formFilter = $(item).closest('form').attr('lay-filter');
+            var password = $('form[lay-filter="' + formFilter + '"] input[name="password"]').val();
+            if (value !== password) {
+                return '两次密码输入不一致';
+            }
+        }
+    });
+
+    // ========== 表单提交事件 ==========
+
+    // 基础表单提交
+    form.on('submit(basicSubmit)', function(data) {
+        layer.msg('验证通过！数据：' + JSON.stringify(data.field));
+        console.log('基础表单数据：', data.field);
+        return false;
+    });
+
+    // 费率表单提交
+    form.on('submit(rateSubmit)', function(data) {
+        layer.msg('验证通过！费率数据：' + JSON.stringify(data.field));
+        console.log('费率表单数据：', data.field);
+        return false;
+    });
+
+    // 金额表单提交
+    form.on('submit(amountSubmit)', function(data) {
+        layer.msg('验证通过！金额数据：' + JSON.stringify(data.field));
+        console.log('金额表单数据：', data.field);
+        return false;
+    });
+
+    // 证件表单提交
+    form.on('submit(idCardSubmit)', function(data) {
+        layer.msg('验证通过！证件数据：' + JSON.stringify(data.field));
+        console.log('证件表单数据：', data.field);
+        return false;
+    });
+
+    // 联系方式表单提交
+    form.on('submit(contactSubmit)', function(data) {
+        layer.msg('验证通过！联系方式数据：' + JSON.stringify(data.field));
+        console.log('联系方式表单数据：', data.field);
+        return false;
+    });
+
+    // 商户表单提交
+    form.on('submit(merchantSubmit)', function(data) {
+        layer.msg('验证通过！商户数据：' + JSON.stringify(data.field));
+        console.log('商户表单数据：', data.field);
+        return false;
+    });
+});
+</script>
+
+</body>
+</html>

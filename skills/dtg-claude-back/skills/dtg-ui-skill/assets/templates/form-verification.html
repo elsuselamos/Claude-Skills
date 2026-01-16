@@ -1,0 +1,670 @@
+{#
+  Layui 表单验证规则模板集合
+  基于实际项目代码：
+  - x_mgr/src/views/merchant/list/mch_add.html
+
+  用途：提供可复用的表单验证规则模板
+#}
+
+<!-- ==================== 基础验证规则 HTML 模板 ==================== -->
+
+<!-- 必填输入框 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">字段名称</label>
+    <div class="layui-input-inline">
+        <input type="text" name="fieldName" lay-verify="nonempty"
+               placeholder="请输入字段名称" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- 密码输入框 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">登录密码</label>
+    <div class="layui-input-inline">
+        <input type="password" name="password" lay-verify="required|password"
+               placeholder="请输入新密码,8-16位的字母和数字组合"
+               autocomplete="new-password" class="layui-input">
+    </div>
+</div>
+
+<!-- 下拉选择必填 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">选择项</label>
+    <div class="layui-input-inline">
+        <select name="selectField" lay-search lay-verify="nonempty" lay-filter="selectChange">
+            <option value="">请选择</option>
+            <option value="1">选项1</option>
+            <option value="2">选项2</option>
+        </select>
+    </div>
+</div>
+
+<!-- ==================== 费率验证模板（基于实际项目）==================== -->
+
+<!-- 费率输入框（带上级费率参考） -->
+<div class="layui-form-item">
+    <label class="layui-form-label">代收费率</label>
+    <div class="layui-input-inline">
+        <input type="number" name="payRatesFixed" class="rate-input"
+               lay-verify="nonempty|rate" data-parent-value="5.5"
+               min="0" max="100" step="0.01" placeholder="0.00">
+    </div>
+    <div class="layui-form-mid layui-word-aux">
+        <span style="color: #999;">- 5.5（上级费率）</span>
+    </div>
+</div>
+
+<!-- 费率组合输入（固定 + 百分比） -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">代收费率(%/单笔)</label>
+    <div class="layui-input-inline" style="width: auto;">
+        <input type="number" class="rate-input" name="payRatesFixed"
+               lay-verify="nonempty|rate" data-parent-value="5.5"
+               min="0" max="100" step="0.01" placeholder="0.00">
+    </div>
+    <div class="layui-form-mid">-</div>
+    <div class="layui-form-mid" style="color: #999;">5.5</div>
+    <div class="layui-form-mid">+</div>
+    <div class="layui-input-inline" style="width: auto;">
+        <input type="number" class="rate-input" name="payRatesPercentage"
+               lay-verify="nonempty|rate" data-parent-value="0.5"
+               min="0" max="100" step="0.01" placeholder="0.00">
+    </div>
+    <div class="layui-form-mid">-</div>
+    <div class="layui-form-mid" style="color: #999;">0.5</div>
+</div>
+
+<!-- ==================== 金额验证模板 ==================== -->
+
+<!-- 金额输入（范围验证） -->
+<div class="layui-form-item">
+    <label class="layui-form-label">交易金额</label>
+    <div class="layui-input-inline">
+        <input type="number" name="amount" lay-verify="required|amountRange"
+               data-min="0.01" data-max="50000" step="0.01"
+               placeholder="请输入金额" class="layui-input">
+    </div>
+    <div class="layui-form-mid layui-word-aux">
+        金额范围：0.01 - 50000
+    </div>
+</div>
+
+<!-- ==================== 联系方式验证模板 ==================== -->
+
+<!-- 手机号或邮箱 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">联系方式</label>
+    <div class="layui-input-inline">
+        <input type="text" name="contact" lay-verify="required|phoneOrEmail"
+               placeholder="请输入手机号或邮箱" class="layui-input">
+    </div>
+</div>
+
+<!-- 手机号 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">手机号</label>
+    <div class="layui-input-inline">
+        <input type="text" name="phone" lay-verify="required|phone"
+               placeholder="请输入手机号" class="layui-input">
+    </div>
+</div>
+
+<!-- 邮箱 -->
+<div class="layui-form-item">
+    <label class="layui-form-label">邮箱</label>
+    <div class="layui-input-inline">
+        <input type="text" name="email" lay-verify="email"
+               placeholder="请输入邮箱" class="layui-input">
+    </div>
+</div>
+
+<!-- ==================== 密码相关验证模板 ==================== -->
+
+<!-- 登录密码 + 确认密码 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">登录密码</label>
+    <div class="layui-input-inline">
+        <input type="password" name="password" id="password"
+               lay-verify="required|password"
+               placeholder="请输入新密码,8-16位的字母和数字组合"
+               autocomplete="new-password" class="layui-input">
+    </div>
+</div>
+
+<div class="layui-form-item">
+    <label class="layui-form-label required">确认密码</label>
+    <div class="layui-input-inline">
+        <input type="password" name="confirmPassword"
+               lay-verify="required|confirmPassword"
+               placeholder="请再次输入密码" autocomplete="new-password" class="layui-input">
+    </div>
+</div>
+
+<!-- 支付密码（API使用） -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">支付密码</label>
+    <div class="layui-input-inline">
+        <input type="password" name="apiPassword"
+               lay-verify="required|apiPassword"
+               placeholder="请输入新密码,8-16位的字母和数字组合（API串接使用）"
+               autocomplete="new-password" class="layui-input">
+    </div>
+</div>
+
+<!-- 资金密码（结算使用） -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">资金密码</label>
+    <div class="layui-input-inline">
+        <input type="password" name="payPassword"
+               lay-verify="required|payPassword"
+               placeholder="请输入新密码,8-16位的字母和数字组合（结算申请使用）"
+               autocomplete="new-password" class="layui-input">
+    </div>
+</div>
+
+<!-- ==================== 编号类验证模板 ==================== -->
+
+<!-- 用户名 -->
+<div class="layui-form-item">
+    <label class="layui-form-label required">用户名</label>
+    <div class="layui-input-inline">
+        <input type="text" name="userName" lay-verify="required|userName"
+               placeholder="请输入用户登录名" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- 编码 -->
+<div class="layui-form-item">
+    <label class="layui-form-label">编码</label>
+    <div class="layui-input-inline">
+        <input type="text" name="code" lay-verify="code"
+               placeholder="请输入编码（大写字母+数字）" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- 商户号 -->
+<div class="layui-form-item">
+    <label class="layui-form-label">商户号</label>
+    <div class="layui-input-inline">
+        <input type="text" name="mchId" lay-verify="mchId"
+               placeholder="请输入商户号" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- ==================== 证件验证模板 ==================== -->
+
+<!-- 身份证号 -->
+<div class="layui-form-item">
+    <label class="layui-form-label">身份证号</label>
+    <div class="layui-input-inline">
+        <input type="text" name="idCard" lay-verify="idCard"
+               placeholder="请输入身份证号" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- 银行卡号 -->
+<div class="layui-form-item">
+    <label class="layui-form-label">银行卡号</label>
+    <div class="layui-input-inline">
+        <input type="text" name="bankCard" lay-verify="bankCard"
+               placeholder="请输入银行卡号" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- 统一社会信用代码 -->
+<div class="layui-form-item">
+    <label class="layui-form-label">信用代码</label>
+    <div class="layui-input-inline">
+        <input type="text" name="creditCode" lay-verify="creditCode"
+               placeholder="请输入统一社会信用代码" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<!-- ==================== 样式定义 ==================== -->
+
+<style>
+    /* 必填项红色星号 */
+    .layui-form-label.required::after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+        font-size: 1.5em;
+    }
+
+    /* 费率输入框样式 */
+    .rate-input {
+        width: 120px;
+        height: 38px;
+        line-height: 1.3;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #e6e6e6;
+        background-color: #fff;
+        border-radius: 2px;
+        padding-left: 8px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .rate-input:focus {
+        border-color: #009688;
+    }
+
+    /* 验证失败样式 */
+    .layui-form-danger:focus {
+        border-color: #FF5722 !important;
+    }
+
+    .layui-form-danger + .layui-form-select .layui-input,
+    .layui-form-danger + .layui-form-select .layui-edge {
+        border-color: #FF5722 !important;
+    }
+</style>
+
+<!-- ==================== JavaScript 验证规则定义 ==================== -->
+
+<script>
+layui.use(['form', 'jquery'], function() {
+    var form = layui.form;
+    var $ = layui.$;
+
+    // ========== 基础验证规则 ==========
+    form.verify({
+        // 非空验证（不包含纯空格）
+        nonempty: [
+            /\S+/,
+            '必填项不能为空'
+        ],
+
+        // 密码：8-16位字母和数字组合
+        password: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            '密码必须为8-16位的字母和数字组合'
+        ],
+
+        // 支付密码
+        apiPassword: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            '支付密码必须为8-16位的字母和数字组合'
+        ],
+
+        // 资金密码
+        payPassword: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            '资金密码必须为8-16位的字母和数字组合'
+        ],
+
+        // 用户名：4-20位字母、数字、下划线
+        userName: [
+            /^[a-zA-Z0-9_]{4,20}$/,
+            '用户名必须4-20位（字母、数字、下划线）'
+        ],
+
+        // 编码：大写字母+数字，3-20位
+        code: [
+            /^[A-Z0-9]{3,20}$/,
+            '编码必须3-20位（大写字母、数字）'
+        ],
+
+        // 商户号：6-15位数字
+        mchId: [
+            /^\d{6,15}$/,
+            '商户号必须6-15位数字'
+        ],
+
+        // 身份证号
+        idCard: [
+            /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/,
+            '请输入正确的身份证号'
+        ],
+
+        // 银行卡号：16-19位数字
+        bankCard: [
+            /^[0-9]{16,19}$/,
+            '请输入正确的银行卡号'
+        ],
+
+        // 统一社会信用代码
+        creditCode: [
+            /^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$/,
+            '请输入正确的统一社会信用代码'
+        ],
+
+        // 金额格式
+        amount: [
+            /^(0|[1-9]\d*)(\.\d{1,2})?$/,
+            '请输入正确的金额格式'
+        ],
+
+        // 正整数
+        positiveInt: [
+            /^[1-9]\d*$/,
+            '请输入正整数'
+        ]
+    });
+
+    // ========== 函数式验证规则 ==========
+
+    // 确认密码
+    form.verify({
+        confirmPassword: function(value, item) {
+            var password = $('input[name="password"]').val();
+            if (value !== password) {
+                return '两次密码输入不一致';
+            }
+        }
+    });
+
+    // 费率验证（基于实际项目）
+    form.verify({
+        rate: function(value, item) {
+            if (value) {
+                const rateValue = parseFloat(value);
+
+                // 检查费率范围
+                if (rateValue <= 0 || rateValue >= 100) {
+                    return '费率必须在0-100之间';
+                }
+
+                // 检查是否必须大于上级费率
+                const parentValue = parseFloat($(item).attr('data-parent-value'));
+                if (!isNaN(parentValue) && rateValue < parentValue) {
+                    return `费率需大于等于上级 ${parentValue}`;
+                }
+            }
+        }
+    });
+
+    // 金额范围验证
+    form.verify({
+        amountRange: function(value, item) {
+            if (value) {
+                const min = parseFloat($(item).attr('data-min'));
+                const max = parseFloat($(item).attr('data-max'));
+                const amount = parseFloat(value);
+
+                if (!isNaN(min) && amount < min) {
+                    return `金额不能小于 ${min}`;
+                }
+                if (!isNaN(max) && amount > max) {
+                    return `金额不能大于 ${max}`;
+                }
+            }
+        }
+    });
+
+    // 字符长度范围验证
+    form.verify({
+        lengthRange: function(value, item) {
+            const min = parseInt($(item).attr('data-min-length'));
+            const max = parseInt($(item).attr('data-max-length'));
+
+            if (!isNaN(min) && value.length < min) {
+                return `长度不能小于 ${min} 位`;
+            }
+            if (!isNaN(max) && value.length > max) {
+                return `长度不能大于 ${max} 位`;
+            }
+        }
+    });
+
+    // 手机号或邮箱
+    form.verify({
+        phoneOrEmail: function(value) {
+            if (value) {
+                const isPhone = /^1[3-9]\d{9}$/.test(value);
+                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+                if (!isPhone && !isEmail) {
+                    return '请输入正确的手机号或邮箱';
+                }
+            }
+        }
+    });
+
+    // IP 地址验证
+    form.verify({
+        ip: function(value) {
+            if (value) {
+                const ipPattern = /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+                if (!ipPattern.test(value)) {
+                    return '请输入正确的IP地址';
+                }
+            }
+        }
+    });
+
+    // 商户名称验证
+    form.verify({
+        mchName: [
+            /^[\u4e00-\u9fa5a-zA-Z0-9\s]{2,50}$/,
+            '商户名称必须2-50位（中文、字母、数字、空格）'
+        ]
+    });
+});
+</script>
+
+<!-- ==================== 国际化验证规则（基于实际项目）==================== -->
+
+<script>
+layui.use(['form', 'jquery'], function() {
+    var form = layui.form;
+    var $ = layui.$;
+
+    // 带国际化支持的验证规则
+    form.verify({
+        nonempty: [
+            /\S+/,
+            translateMessageByPath("common:required", "必填项不能为空")
+        ],
+
+        password: [
+            /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/,
+            translateMessageByPath("common:passwordRule", "密码必须为8-16位的字母和数字组合")
+        ],
+
+        rate: function(value, item) {
+            if (value) {
+                const rateValue = parseFloat(value);
+
+                if (rateValue <= 0 || rateValue >= 100) {
+                    return translateMessageByPath("common:rateRangeError", "费率必须在0-100之间");
+                }
+
+                const parentValue = parseFloat($(item).attr('data-parent-value'));
+                if (!isNaN(parentValue) && rateValue < parentValue) {
+                    const msg = translateMessageByPath("common:rateMustBeGreaterThanAgent", "费率需大于等于上级 {0}");
+                    return msg.replace("{0}", parentValue);
+                }
+            }
+        }
+    });
+});
+</script>
+
+<!-- ==================== 验证规则工具类 ==================== -->
+
+<script>
+/**
+ * 表单验证工具类
+ */
+var FormValidatorUtil = {
+    /**
+     * 批量添加验证规则
+     * @param {Object} rules 验证规则对象
+     */
+    addRules: function(rules) {
+        layui.use(['form'], function() {
+            layui.form.verify(rules);
+        });
+    },
+
+    /**
+     * 添加单个验证规则
+     * @param {string} name 规则名称
+     * @param {Array|Function} rule 规则定义
+     */
+    addRule: function(name, rule) {
+        layui.use(['form'], function() {
+            layui.form.verify({
+                [name]: rule
+            });
+        });
+    },
+
+    /**
+     * 验证单个字段
+     * @param {string} fieldName 字段名
+     * @param {string} formFilter 表单过滤器
+     * @returns {string|null} 错误信息或 null
+     */
+    validateField: function(fieldName, formFilter) {
+        layui.use(['form', 'jquery'], function() {
+            var $ = layui.jquery;
+            var form = layui.form;
+            var input = $('form[lay-filter="' + formFilter + '"] [name="' + fieldName + '"]');
+            var value = input.val();
+            var verify = input.attr('lay-verify');
+
+            if (verify) {
+                var rules = verify.split('|');
+                for (var i = 0; i < rules.length; i++) {
+                    var errorMsg = form.validate(input, rules[i], value);
+                    if (errorMsg) {
+                        layui.layer.msg(errorMsg);
+                        return errorMsg;
+                    }
+                }
+            }
+        });
+        return null;
+    },
+
+    /**
+     * 验证整个表单
+     * @param {string} formFilter 表单过滤器
+     * @returns {boolean} 是否验证通过
+     */
+    validateForm: function(formFilter) {
+        layui.use(['jquery'], function() {
+            var $ = layui.jquery;
+            var isValid = true;
+
+            $('form[lay-filter="' + formFilter + '"] [lay-verify]').each(function() {
+                var fieldName = $(this).attr('name');
+                if (FormValidatorUtil.validateField(fieldName, formFilter)) {
+                    isValid = false;
+                    return false;
+                }
+            });
+
+            return isValid;
+        });
+    },
+
+    /**
+     * 清空所有验证规则
+     */
+    clearRules: function() {
+        layui.use(['form'], function() {
+            layui.form.verify({});
+        });
+    }
+};
+
+// 使用示例
+/*
+// 添加自定义规则
+FormValidatorUtil.addRules({
+    customRule1: [/^\d{6}$/, '请输入6位数字'],
+    customRule2: function(value) {
+        if (value.length < 10) {
+            return '长度不能小于10';
+        }
+    }
+});
+
+// 验证单个字段
+var error = FormValidatorUtil.validateField('userName', 'merchantForm');
+if (error) {
+    console.log('验证失败：' + error);
+}
+
+// 验证整个表单
+var isValid = FormValidatorUtil.validateForm('merchantForm');
+console.log('表单验证：' + isValid);
+*/
+</script>
+
+<!-- ==================== 完整表单示例 ==================== -->
+
+<form class="layui-form layui-form-pane" lay-filter="exampleForm">
+    <!-- 基本信息 -->
+    <div class="layui-form-item">
+        <label class="layui-form-label required">商户名称</label>
+        <div class="layui-input-inline">
+            <input type="text" name="name" lay-verify="required|mchName"
+                   placeholder="请输入商户名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label required">用户名</label>
+        <div class="layui-input-inline">
+            <input type="text" name="userName" lay-verify="required|userName"
+                   placeholder="请输入用户登录名" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label required">登录密码</label>
+        <div class="layui-input-inline">
+            <input type="password" name="password" id="password"
+                   lay-verify="required|password"
+                   placeholder="请输入新密码,8-16位的字母和数字组合"
+                   autocomplete="new-password" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label required">确认密码</label>
+        <div class="layui-input-inline">
+            <input type="password" name="confirmPassword"
+                   lay-verify="required|confirmPassword"
+                   placeholder="请再次输入密码" autocomplete="new-password" class="layui-input">
+        </div>
+    </div>
+
+    <!-- 费率信息 -->
+    <div class="layui-form-item">
+        <label class="layui-form-label required">代收费率(%)</label>
+        <div class="layui-input-inline">
+            <input type="number" name="payRate"
+                   lay-verify="required|rate" data-parent-value="5.5"
+                   min="0" max="100" step="0.01" placeholder="0.00" class="layui-input">
+        </div>
+        <div class="layui-form-mid layui-word-aux">上级费率：5.5</div>
+    </div>
+
+    <!-- 提交按钮 -->
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="submit" class="layui-btn" lay-submit lay-filter="formSubmit">保存</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+        </div>
+    </div>
+</form>
+
+<script>
+layui.use(['form', 'layer'], function() {
+    var form = layui.form;
+    var layer = layui.layer;
+
+    // 表单提交
+    form.on('submit(formSubmit)', function(data) {
+        console.log('表单数据：', data.field);
+        // 提交到服务器...
+        return false;
+    });
+});
+</script>

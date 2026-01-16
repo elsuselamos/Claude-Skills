@@ -1,0 +1,283 @@
+<!--
+  企业级数据统计卡片模板
+  基于 716+ 实际项目 HTML 文件分析
+  用于列表页面顶部的数据统计展示
+-->
+
+<!-- 方案1: 简洁卡片布局 -->
+<div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+  <div class="layui-col-md3">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        <i class="layui-icon layui-icon-cols"></i> {{cardTitle1}}
+      </div>
+      <div class="layui-card-body" style="text-align:center;">
+        <h2 id="{{statId1}}" style="color:#009688;margin:10px 0;">0</h2>
+        <p style="color:#999;font-size:12px;">{{cardDesc1}}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md3">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        <i class="layui-icon layui-icon-rmb"></i> {{cardTitle2}}
+      </div>
+      <div class="layui-card-body" style="text-align:center;">
+        <h2 id="{{statId2}}" style="color:#1E9FFF;margin:10px 0;">￥0.00</h2>
+        <p style="color:#999;font-size:12px;">{{cardDesc2}}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md3">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        <i class="layui-icon layui-icon-ok-circle"></i> {{cardTitle3}}
+      </div>
+      <div class="layui-card-body" style="text-align:center;">
+        <h2 id="{{statId3}}" style="color:#FFB800;margin:10px 0;">0</h2>
+        <p style="color:#999;font-size:12px;">{{cardDesc3}}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md3">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        <i class="layui-icon layui-icon-rate"></i> {{cardTitle4}}
+      </div>
+      <div class="layui-card-body" style="text-align:center;">
+        <h2 id="{{statId4}}" style="color:#FF5722;margin:10px 0;">0%</h2>
+        <p style="color:#999;font-size:12px;">{{cardDesc4}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案2: 紧凑卡片布局（带图标） -->
+<div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+  <div class="layui-col-md3">
+    <div class="layui-card" style="border-left: 4px solid #009688;">
+      <div class="layui-card-body" style="padding: 10px 15px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p style="margin:0;color:#999;font-size:12px;">{{cardTitle1}}</p>
+            <h3 id="{{statId1}}" style="margin:5px 0;color:#333;">0</h3>
+          </div>
+          <i class="layui-icon layui-icon-cols" style="font-size:32px;color:#009688;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md3">
+    <div class="layui-card" style="border-left: 4px solid #1E9FFF;">
+      <div class="layui-card-body" style="padding: 10px 15px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p style="margin:0;color:#999;font-size:12px;">{{cardTitle2}}</p>
+            <h3 id="{{statId2}}" style="margin:5px 0;color:#333;">￥0.00</h3>
+          </div>
+          <i class="layui-icon layui-icon-rmb" style="font-size:32px;color:#1E9FFF;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md3">
+    <div class="layui-card" style="border-left: 4px solid #FFB800;">
+      <div class="layui-card-body" style="padding: 10px 15px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p style="margin:0;color:#999;font-size:12px;">{{cardTitle3}}</p>
+            <h3 id="{{statId3}}" style="margin:5px 0;color:#333;">0</h3>
+          </div>
+          <i class="layui-icon layui-icon-ok-circle" style="font-size:32px;color:#FFB800;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md3">
+    <div class="layui-card" style="border-left: 4px solid #FF5722;">
+      <div class="layui-card-body" style="padding: 10px 15px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p style="margin:0;color:#999;font-size:12px;">{{cardTitle4}}</p>
+            <h3 id="{{statId4}}" style="margin:5px 0;color:#333;">0%</h3>
+          </div>
+          <i class="layui-icon layui-icon-rate" style="font-size:32px;color:#FF5722;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案3: 大号数字展示（适合关键指标） -->
+<div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+  <div class="layui-col-md6">
+    <div class="layui-card">
+      <div class="layui-card-header">{{cardTitle1}}</div>
+      <div class="layui-card-body">
+        <div style="text-align:center;">
+          <h1 id="{{statId1}}" style="font-size:48px;color:#009688;margin:10px 0;">0</h1>
+          <p style="color:#999;">{{cardDesc1}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-col-md6">
+    <div class="layui-card">
+      <div class="layui-card-header">{{cardTitle2}}</div>
+      <div class="layui-card-body">
+        <div style="text-align:center;">
+          <h1 id="{{statId2}}" style="font-size:48px;color:#1E9FFF;margin:10px 0;">￥0.00</h1>
+          <p style="color:#999;">{{cardDesc2}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript 加载统计数据 -->
+<script>
+layui.use(['admin'], function(){
+  var admin = layui.admin;
+  var $ = layui.$;
+
+  // 加载统计数据
+  function loadStatistics(){
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '/api/{{statisticsPath}}',
+      data: {
+        createTimeStart: $('#createTimeStart').val(),
+        createTimeEnd: $('#createTimeEnd').val(),
+        status: $('#status').val()
+      },
+      success: function(res){
+        if(res.code == 0){
+          // 更新统计卡片数据
+          $('#{{statId1}}').html(res.data.{{statField1}} || 0);
+          $('#{{statId2}}').html('￥' + (res.data.{{statField2}} || '0.00'));
+          $('#{{statId3}}').html(res.data.{{statField3}} || 0);
+          $('#{{statId4}}').html((res.data.{{statField4}} || 0) + '%');
+        }
+      }
+    });
+  }
+
+  // 页面加载时获取统计数据
+  loadStatistics();
+
+  // 搜索时重新加载统计
+  $('#searchBtn').on('click', function(){
+    loadStatistics();
+  });
+
+  // 定时刷新统计（可选）
+  // setInterval(loadStatistics, 30000); // 每30秒刷新一次
+});
+</script>
+
+<!--
+  使用示例：
+
+  1. 订单管理统计卡片
+  <div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-cols"></i> 订单总数
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="allTotalCount" style="color:#009688;margin:10px 0;">0</h2>
+          <p style="color:#999;font-size:12px;">全部订单</p>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-rmb"></i> 交易总额
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="allTotalAmount" style="color:#1E9FFF;margin:10px 0;">￥0.00</h2>
+          <p style="color:#999;font-size:12px;">累计金额</p>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-ok-circle"></i> 成功订单
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="successCount" style="color:#FFB800;margin:10px 0;">0</h2>
+          <p style="color:#999;font-size:12px;">支付成功</p>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-rate"></i> 成功率
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="successRate" style="color:#FF5722;margin:10px 0;">0%</h2>
+          <p style="color:#999;font-size:12px;">支付成功率</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  2. 对账统计卡片
+  <div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-cols"></i> 对账批次
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="batchCount" style="color:#009688;margin:10px 0;">0</h2>
+          <p style="color:#999;font-size:12px;">对账批次总数</p>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-ok-circle"></i> 一致记录
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="matchCount" style="color:#1E9FFF;margin:10px 0;">0</h2>
+          <p style="color:#999;font-size:12px;">账单一致</p>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-close-fill"></i> 差错记录
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="mistakeCount" style="color:#FF5722;margin:10px 0;">0</h2>
+          <p style="color:#999;font-size:12px;">账单不一致</p>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md3">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <i class="layui-icon layui-icon-rate"></i> 差错率
+        </div>
+        <div class="layui-card-body" style="text-align:center;">
+          <h2 id="mistakeRate" style="color:#FFB800;margin:10px 0;">0%</h2>
+          <p style="color:#999;font-size:12px;">差错比率</p>
+        </div>
+      </div>
+    </div>
+  </div>
+-->

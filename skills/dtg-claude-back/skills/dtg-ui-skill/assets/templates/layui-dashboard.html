@@ -1,0 +1,203 @@
+{#
+  数据统计仪表板模板
+  基于实际项目代码：x_mgr/src/controller/console.js
+
+  功能：
+  - 轮播图组件配置
+  - ECharts 图表容器
+  - 数据卡片展示区
+  - 响应式事件监听
+#}
+
+<div class="layui-fluid">
+  <!-- 数据概览轮播 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">{{dashboardTitle}}</div>
+        <div class="layui-card-body">
+          <div class="layui-carousel layadmin-carousel layadmin-backlog" id="dataCarousel">
+            <div carousel-item>
+              <!-- 数据卡片区域 -->
+              <ul class="layui-row layui-col-space10" id="dataCards">
+                {{#each dataCards}}
+                <li class="layui-col-xs6 layui-col-sm3">
+                  <div class="layadmin-backlog-body">
+                    <h3>{{this.title}}</h3>
+                    <p><cite id="{{this.id}}">0</cite></p>
+                  </div>
+                </li>
+                {{/each}}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ECharts 图表区域 -->
+  <div class="layui-row layui-col-space15">
+    {{#each charts}}
+    <div class="layui-col-{{this.colWidth}}">
+      <div class="layui-card">
+        <div class="layui-card-header">{{this.title}}</div>
+        <div class="layui-card-body">
+          <div id="{{this.id}}" style="height: {{this.height}};"></div>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'carousel', 'echarts'], function(){
+  var $ = layui.$
+    ,admin = layui.admin
+    ,carousel = layui.carousel
+    ,element = layui.element
+    ,device = layui.device
+    ,echarts = layui.echarts;
+
+  // 轮播图配置
+  $('.layadmin-carousel').each(function(){
+    var othis = $(this);
+    carousel.render({
+      elem: this,
+      width: '100%',
+      arrow: 'none',
+      interval: othis.data('interval') || 5000,
+      autoplay: othis.data('autoplay') !== false,
+      trigger: (device.ios || device.android) ? 'click' : 'hover',
+      anim: othis.data('anim') || 'default'
+    });
+  });
+
+  // ECharts 图表配置
+  var echartsApp = [];
+  var chartOptions = [
+    {{#each charts}}
+    {
+      title: {
+        text: '{{this.title}}',
+        x: 'center',
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: '{{this.tooltipTrigger}}',
+        formatter: '{{{this.tooltipFormatter}}}'
+      },
+      {{#if this.legend}}
+      legend: {
+        orient: '{{this.legend.orient}}',
+        x: '{{this.legend.x}}',
+        data: {{#each this.legend.data}}{{@key}}{{#unless @last}}, {{/unless}}{{/each}}
+      },
+      {{/if}}
+      xAxis: {{this.xAxis}},
+      yAxis: {{this.yAxis}},
+      series: {{this.series}}
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ];
+
+  // 渲染图表函数
+  var renderChart = function(index){
+    var chartId = '{{#each charts}}{{this.id}}{{#unless @last}},{{/unless}}{{/each}}'.split(',')[index];
+    var elem = document.getElementById(chartId);
+
+    if(elem && echartsApp[index] === undefined){
+      echartsApp[index] = echarts.init(elem, layui.echartsTheme);
+      echartsApp[index].setOption(chartOptions[index]);
+
+      // 响应式调整
+      window.onresize = function(){
+        echartsApp[index].resize();
+      };
+    }
+  };
+
+  // 初始化所有图表
+  for(var i = 0; i < chartOptions.length; i++){
+    renderChart(i);
+  }
+
+  // 监听轮播切换（如果有多个轮播项）
+  var carouselIndex = 0;
+  carousel.on('change(dataCarousel)', function(obj){
+    carouselIndex = obj.index;
+  });
+
+  // 监听侧边伸缩，重新渲染图表
+  layui.admin.on('side', function(){
+    setTimeout(function(){
+      for(var i = 0; i < echartsApp.length; i++){
+        if(echartsApp[i]){
+          echartsApp[i].resize();
+        }
+      }
+    }, 300);
+  });
+
+  // 监听路由切换
+  layui.admin.on('hash(tab)', function(){
+    layui.router().path.join('') || renderChart(carouselIndex);
+  });
+
+  // 加载数据卡片数据
+  function loadDashboardData() {
+    {{#if loadDataUrl}}
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '{{loadDataUrl}}',
+      success: function(res){
+        if(res.code == 0){
+          {{#each dataCards}}
+          $('#{{this.id}}').html(res.data.{{this.dataKey}} || 0);
+          {{/each}}
+        }
+      }
+    });
+    {{/if}}
+  }
+
+  // 初始加载数据
+  loadDashboardData();
+
+  // 定时刷新数据（可选）
+  {{#if autoRefresh}}
+  setInterval(loadDashboardData, {{refreshInterval}});
+  {{/if}}
+});
+</script>
+
+<style>
+.layadmin-backlog-body {
+  display: block;
+  padding: 10px 15px;
+  background-color: #f8f8f8;
+  color: #333;
+  border-radius: 4px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.layadmin-backlog-body h3 {
+  font-size: 12px;
+  font-weight: normal;
+  color: #666;
+  padding-bottom: 5px;
+}
+
+.layadmin-backlog-body p cite {
+  font-style: normal;
+  font-size: 20px;
+  font-weight: bold;
+  color: #009688;
+}
+
+.layadmin-backlog-body:hover {
+  background-color: #f0f0f0;
+}
+</style>

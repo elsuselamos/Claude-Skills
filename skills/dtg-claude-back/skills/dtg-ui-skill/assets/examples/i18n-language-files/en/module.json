@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Page Title",
+    "home": "Home",
+    "management": "Module Management",
+    "searchTitle": "Search Conditions",
+    "dataList": "Data List",
+    "editTitle": "Edit",
+    "addTitle": "Add New"
+  },
+  "button": {
+    "search": "Search",
+    "reset": "Reset",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "export": "Export",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "table": {
+    "id": "ID",
+    "name": "Name",
+    "status": "Status",
+    "action": "Action",
+    "createTime": "Create Time",
+    "updateTime": "Update Time",
+    "remark": "Remark"
+  },
+  "form": {
+    "name": "Name",
+    "status": "Status",
+    "remark": "Remark"
+  },
+  "field": {
+    "fieldName": "Field Name",
+    "fieldNamePlaceholder": "Please enter field name",
+    "dateRange": "Date Range",
+    "status": "Status"
+  },
+  "prompt": {
+    "deleteConfirm": "Are you sure to delete?",
+    "saveSuccess": "Saved successfully",
+    "deleteSuccess": "Deleted successfully",
+    "required": "This field is required"
+  },
+  "status": {
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "active": "Active",
+    "inactive": "Inactive"
+  }
+}

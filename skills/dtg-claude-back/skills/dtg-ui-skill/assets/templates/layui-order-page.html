@@ -1,0 +1,369 @@
+{#
+  企业级订单管理页面模板
+  基于 716+ 实际项目 HTML 文件分析
+  来源：xxpay-manage/order/pay/index.html
+
+  功能特性：
+  - LayuiAdmin 标准布局结构
+  - 复杂搜索表单（时间范围、商户ID、订单号、状态下拉）
+  - 数据统计卡片展示
+  - 数据表格配置（含复选框、工具栏）
+  - 行操作工具栏（查看、编辑、删除等）
+  - 导出功能
+  - 批量操作支持
+#}
+
+<!-- 头部导航 -->
+<div class="layui-card-header layui-card">
+  <span class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">首页</a>
+    <a>{{moduleName}}</a>
+    <a><cite>{{pageTitle}}</cite></a>
+  </span>
+</div>
+
+<!-- 主要内容区 -->
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-tab layui-tab-brief">
+      <ul class="layui-tab-title">
+        <li class="layui-this">{{tabTitle}}</li>
+      </ul>
+      <div class="layui-tab-content">
+        <!-- 数据统计卡片 -->
+        {{#if showStatistics}}
+        <div class="layui-row layui-col-space15" style="margin-bottom:15px;">
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">
+                <i class="layui-icon layui-icon-cols"></i> 订单总数
+              </div>
+              <div class="layui-card-body" style="text-align:center;">
+                <h2 id="allTotalCount" style="color:#009688;margin:10px 0;">0</h2>
+                <p style="color:#999;font-size:12px;">全部订单</p>
+              </div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">
+                <i class="layui-icon layui-icon-rmb"></i> 交易总额
+              </div>
+              <div class="layui-card-body" style="text-align:center;">
+                <h2 id="allTotalAmount" style="color:#1E9FFF;margin:10px 0;">￥0.00</h2>
+                <p style="color:#999;font-size:12px;">累计金额</p>
+              </div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">
+                <i class="layui-icon layui-icon-ok-circle"></i> 成功订单
+              </div>
+              <div class="layui-card-body" style="text-align:center;">
+                <h2 id="successCount" style="color:#FFB800;margin:10px 0;">0</h2>
+                <p style="color:#999;font-size:12px;">支付成功</p>
+              </div>
+            </div>
+          </div>
+          <div class="layui-col-md3">
+            <div class="layui-card">
+              <div class="layui-card-header">
+                <i class="layui-icon layui-icon-rate"></i> 成功率
+              </div>
+              <div class="layui-card-body" style="text-align:center;">
+                <h2 id="successRate" style="color:#FF5722;margin:10px 0;">0%</h2>
+                <p style="color:#999;font-size:12px;">支付成功率</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- 搜索和操作区域 -->
+        <div class="layui-row" style="margin-bottom:15px;">
+          <!-- 操作按钮组 -->
+          <div class="layui-btn-group" style="float:left;">
+            <button class="layui-btn layui-btn-normal" id="addBtn">
+              <i class="layui-icon layui-icon-add-1"></i> 新增
+            </button>
+            <button class="layui-btn layui-btn-danger" id="batchDeleteBtn">
+              <i class="layui-icon layui-icon-delete"></i> 批量删除
+            </button>
+            <button class="layui-btn layui-btn-primary" id="exportBtn">
+              <i class="layui-icon layui-icon-export"></i> 导出
+            </button>
+          </div>
+
+          <!-- 搜索表单 -->
+          <div class="layui-form" style="float:right;">
+            <div class="layui-form-item" style="margin:0;">
+              <div class="layui-input-inline">
+                <input type="text" name="mchId" id="mchId" placeholder="商户ID" class="layui-input">
+              </div>
+              <div class="layui-input-inline">
+                <input type="text" name="orderId" id="orderId" placeholder="订单号" class="layui-input">
+              </div>
+              <div class="layui-input-inline">
+                <select name="status" id="status" lay-search>
+                  <option value="">订单状态</option>
+                  <option value="0">订单生成</option>
+                  <option value="1">支付中</option>
+                  <option value="2">支付成功</option>
+                  <option value="3">支付失败</option>
+                </select>
+              </div>
+              <button id="search" class="layui-btn" data-type="reload">
+                <i class="layui-icon layui-icon-search"></i> 搜索
+              </button>
+              <button type="reset" class="layui-btn layui-btn-primary">
+                <i class="layui-icon layui-icon-refresh"></i> 重置
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <table id="{{tableId}}" lay-filter="{{tableId}}"></table>
+
+        <!-- 行操作工具栏模板 -->
+        <script type="text/html" id="{{toolbarId}}">
+          <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+          <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+          {{# if(d.status == 0){ }}
+          <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</a>
+          {{# } }}
+        </script>
+
+        <!-- 状态模板 -->
+        <script type="text/html" id="statusTpl">
+          {{# if(d.status == 0){ }}
+            <span style="color: blue">订单生成</span>
+          {{# } else if(d.status == 1){ }}
+            <span style="color: orangered">支付中</span>
+          {{# } else if(d.status == 2){ }}
+            <span style="color: green">支付成功</span>
+          {{# } else if(d.status == 3){ }}
+            <span style="color: red">支付失败</span>
+          {{# } }}
+        </script>
+
+        <!-- 时间格式化模板 -->
+        <script type="text/html" id="dateTpl">
+          {{ layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss") }}
+        </script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'table', 'util', 'laydate', 'form'], function(){
+  var $ = layui.$
+    ,admin = layui.admin
+    ,table = layui.table
+    ,util = layui.util
+    ,laydate = layui.laydate
+    ,form = layui.form
+    ,element = layui.element;
+
+  // 渲染导航
+  element.render('breadcrumb', 'breadcrumb');
+
+  // 时间选择器
+  laydate.render({
+    elem: '#createTimeStart',
+    type: 'datetime',
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  laydate.render({
+    elem: '#createTimeEnd',
+    type: 'datetime',
+    format: 'yyyy-MM-dd HH:mm:ss'
+  });
+
+  {{#if showStatistics}}
+  // 统计数据加载函数
+  var loadStatistics = function(mchId, orderId, status, createTimeStart, createTimeEnd) {
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '{{statisticsUrl}}',
+      data: {
+        mchId: mchId,
+        orderId: orderId,
+        status: status,
+        createTimeStart: createTimeStart,
+        createTimeEnd: createTimeEnd
+      },
+      success: function(res){
+        if(res.code == 0){
+          $('#allTotalCount').html(res.data.allTotalCount || 0);
+          $('#allTotalAmount').html('￥' + (res.data.allTotalAmount || '0.00'));
+          $('#successCount').html(res.data.successCount || 0);
+          $('#successRate').html((res.data.successRate || 0) + '%');
+        }
+      }
+    });
+  };
+  {{/if}}
+
+  // 表格渲染
+  table.render({
+    elem: '#{{tableId}}',
+    url: layui.setter.baseUrl + '{{dataUrl}}',
+    where: {
+      access_token: layui.data(layui.setter.tableName).access_token
+    },
+    id: '{{tableReloadId}}',
+    cols: [[
+      {type: 'checkbox', fixed: 'left'},
+      {field: 'id', title: 'ID', width: 80, sort: true},
+      {field: 'mchId', title: '商户ID'},
+      {field: 'orderId', title: '订单号'},
+      {field: 'transAmount', title: '交易金额'},
+      {field: 'status', title: '状态', templet: '#statusTpl'},
+      {field: 'createTime', title: '创建时间', templet: '#dateTpl'},
+      {field:'operation', title: '操作', toolbar: '#{{toolbarId}}', fixed: 'right', width: 200}
+    ]],
+    page: {
+      layout: ['count', 'prev', 'page', 'next', 'limit', 'skip'],
+      limits: [10, 20, 50, 100],
+      limit: 20
+    },
+    skin: 'line',
+    done: function(res){
+      {{#if showStatistics}}
+      // 表格加载完成后加载统计
+      var mchId = $('#mchId').val();
+      var orderId = $('#orderId').val();
+      var status = $('#status').val();
+      loadStatistics(mchId, orderId, status);
+      {{/if}}
+    }
+  });
+
+  // 搜索重载
+  var active = {
+    reload: function(){
+      var mchId = $('#mchId').val();
+      var orderId = $('#orderId').val();
+      var status = $('#status').val();
+      var createTimeStart = $('#createTimeStart').val();
+      var createTimeEnd = $('#createTimeEnd').val();
+
+      table.reload('{{tableReloadId}}', {
+        page: { curr: 1 },
+        where: {
+          mchId: mchId,
+          orderId: orderId,
+          status: status,
+          createTimeStart: createTimeStart,
+          createTimeEnd: createTimeEnd
+        }
+      });
+
+      {{#if showStatistics}}
+      loadStatistics(mchId, orderId, status, createTimeStart, createTimeEnd);
+      {{/if}}
+    }
+  };
+
+  $('#search').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+
+  // 行操作事件监听
+  table.on('tool({{tableId}})', function(obj){
+    var data = obj.data;
+    if(obj.event === 'detail'){
+      location.href = layui.setter.baseLocal + "{{detailPath}}/id=" + data.id;
+    } else if(obj.event === 'edit'){
+      location.href = layui.setter.baseLocal + "{{editPath}}/id=" + data.id;
+    } else if(obj.event === 'delete'){
+      layer.confirm('确定要删除吗？', {icon: 3, title:'提示'}, function(index){
+        admin.req({
+          type: 'post',
+          url: layui.setter.baseUrl + '{{deleteUrl}}',
+          data: { id: data.id },
+          success: function(res){
+            if(res.code == 0){
+              layer.msg('删除成功', {icon: 1});
+              obj.del();
+            } else {
+              layer.msg(res.msg || '删除失败', {icon: 2});
+            }
+          }
+        });
+        layer.close(index);
+      });
+    }
+  });
+
+  // 新增按钮
+  $('#addBtn').on('click', function(){
+    location.href = layui.setter.baseLocal + "{{addPath}}";
+  });
+
+  // 批量删除
+  $('#batchDeleteBtn').on('click', function(){
+    var checkStatus = table.checkStatus('{{tableId}}');
+    var data = checkStatus.data;
+
+    if(data.length === 0){
+      layer.msg('请选择要删除的数据');
+      return;
+    }
+
+    layer.confirm('确定要删除选中的 ' + data.length + ' 条数据吗？', {icon: 3, title:'提示'}, function(index){
+      var ids = data.map(function(item){ return item.id; }).join(',');
+
+      admin.req({
+        type: 'post',
+        url: layui.setter.baseUrl + '{{batchDeleteUrl}}',
+        data: { ids: ids },
+        success: function(res){
+          if(res.code == 0){
+            layer.msg('删除成功', {icon: 1});
+            table.reload('{{tableReloadId}}');
+          } else {
+            layer.msg(res.msg || '删除失败', {icon: 2});
+          }
+        }
+      });
+
+      layer.close(index);
+    });
+  });
+
+  // 导出功能
+  $('#exportBtn').on('click', function(){
+    var queryParams = {
+      mchId: $('#mchId').val(),
+      orderId: $('#orderId').val(),
+      status: $('#status').val(),
+      createTimeStart: $('#createTimeStart').val(),
+      createTimeEnd: $('#createTimeEnd').val(),
+      access_token: layui.data(layui.setter.tableName).access_token
+    };
+
+    admin.req({
+      type: 'get',
+      url: layui.setter.baseUrl + '{{exportUrl}}',
+      data: queryParams,
+      success: function(res){
+        if(res.code == 0){
+          window.location.href = res.data.fileUrl;
+          layer.msg('导出成功', {icon: 1});
+        } else {
+          layer.msg(res.msg || '导出失败', {icon: 2});
+        }
+      }
+    });
+  });
+
+  // 表单渲染
+  form.render();
+});
+</script>

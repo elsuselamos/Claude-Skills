@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui 动态模板完整示例</title>
+    <link rel="stylesheet" href="../../../layui/css/layui.css">
+    <style>
+        .demo-container {
+            padding: 20px;
+        }
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+        }
+        .demo-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="demo-container">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <h2>Layui Laytpl 动态模板完整示例</h2>
+        </div>
+        <div class="layui-card-body">
+
+            <!-- 示例 1: 基础动态下拉框 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 1: 基础动态下拉框（币种筛选）</div>
+                <div style="margin-bottom: 15px;">
+                    <button class="layui-btn">返回</button>
+                    <div style="float: right;" id="currencyFilter-view" class="layui-form"></div>
+                </div>
+                <table class="layui-hide" id="exampleTable1" lay-filter="exampleTable1"></table>
+            </div>
+
+            <!-- 示例 2: 多筛选条件组合 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 2: 多筛选条件组合</div>
+                <div class="layui-form" id="multiFilter-view"></div>
+                <table class="layui-hide" id="exampleTable2" lay-filter="exampleTable2" style="margin-top: 15px;"></table>
+            </div>
+
+            <!-- 示例 3: 表格列模板 -->
+            <div class="demo-section">
+                <div class="demo-title">示例 3: 表格列动态模板</div>
+                <table class="layui-hide" id="exampleTable3" lay-filter="exampleTable3"></table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ============ 模板定义 ============ -->
+
+<!-- 示例 1: 币种筛选模板 -->
+<script id="currencyFilter-tpl" type="text/html">
+    <select id="currencyFilter" lay-search lay-filter="currencySelectChange"
+            style="padding: 5px; border-radius: 4px; border: 1px solid #ddd; width: 120px;">
+        <option value="">全部</option>
+        {{# d.forEach(function(item, index) { }}
+        <option value="{{= item }}" {{ item === 'PHP' ? 'selected' : '' }}>{{= item }}</option>
+        {{# }); }}
+    </select>
+</script>
+
+<!-- 示例 2: 多筛选条件模板 -->
+<script id="multiFilter-tpl" type="text/html">
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline">
+                <select name="status" lay-filter="statusFilter">
+                    <option value="">全部</option>
+                    {{# d.statusList.forEach(function(item) { }}
+                    <option value="{{= item.value }}">{{= item.text }}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-inline">
+                <select name="type" lay-filter="typeFilter">
+                    <option value="">全部</option>
+                    {{# d.typeList.forEach(function(item) { }}
+                    <option value="{{= item.value }}">{{= item.text }}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">币种</label>
+            <div class="layui-input-inline">
+                <select name="currency" lay-filter="currencyFilter">
+                    <option value="">全部</option>
+                    {{# d.currencyList.forEach(function(item) { }}
+                    <option value="{{= item }}">{{= item }}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 示例 3: 状态徽章模板 -->
+<script id="statusBadge-tpl" type="text/html">
+    {{# if(d.status === 1) { }}
+        <span class="layui-badge layui-bg-green">启用</span>
+    {{# } else if(d.status === 0) { }}
+        <span class="layui-badge layui-bg-gray">禁用</span>
+    {{# } else if(d.status === 2) { }}
+        <span class="layui-badge layui-bg-orange">审核中</span>
+    {{# } else { }}
+        <span class="layui-badge layui-bg-red">异常</span>
+    {{# } }}
+</script>
+
+<!-- 示例 3: 费率显示模板 -->
+<script id="rateDisplay-tpl" type="text/html">
+    {{# if((d.rate == '' || d.rate == null) && (d.fee == '' || d.fee == null)) { }}
+        <span>未设置</span>
+    {{# } else { }}
+        {{# if(d.rate == '' || d.rate == null) { }}
+            <span style="color: blue">{{= d.fee }}/笔</span>
+        {{# } else { }}
+            <span style="color: blue">{{= d.rate }}%+{{= d.fee }}/笔</span>
+        {{# } }}
+    {{# } }}
+</script>
+
+<!-- 示例 3: 操作按钮模板 -->
+<script id="actionButtons-tpl" type="text/html">
+    <div class="layui-btn-group">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        {{# if(d.status === 1) { }}
+            <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="disable">禁用</a>
+        {{# } else { }}
+            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="enable">启用</a>
+        {{# } }}
+    </div>
+</script>
+
+<script src="../../../layui/layui.js"></script>
+<script>
+layui.use(['table', 'form', 'laytpl', 'layer'], function () {
+    var $ = layui.$
+        , table = layui.table
+        , form = layui.form
+        , laytpl = layui.laytpl
+        , layer = layui.layer;
+
+    // 模拟数据
+    var mockData = {
+        currencies: ['PHP', 'USD', 'CNY', 'EUR'],
+        tableData: [
+            { id: 1, name: '微信支付', code: 'WXPay', currency: 'PHP', status: 1, rate: 0.6, fee: 2, type: 1 },
+            { id: 2, name: '支付宝', code: 'Alipay', currency: 'USD', status: 1, rate: 0.5, fee: 1.5, type: 2 },
+            { id: 3, name: '银行卡', code: 'BankPay', currency: 'CNY', status: 0, rate: null, fee: null, type: 1 },
+            { id: 4, name: '银联支付', code: 'UnionPay', currency: 'EUR', status: 2, rate: 0.8, fee: 3, type: 3 },
+            { id: 5, name: '代付通道', code: 'AgentPay', currency: 'PHP', status: 1, rate: 1, fee: 5, type: 1 }
+        ]
+    };
+
+    // ==================== 示例 1: 基础动态下拉框 ====================
+    (function() {
+        var template = document.getElementById('currencyFilter-tpl').innerHTML;
+        var target = document.getElementById('currencyFilter-view');
+
+        // 渲染币种下拉框
+        laytpl(template).render(mockData.currencies, function (html) {
+            target.innerHTML = html;
+            form.render();
+        });
+
+        // 监听币种变化
+        form.on('select(currencySelectChange)', function (data) {
+            var currencyValue = data.value === "" ? null : data.value;
+            table.reload("exampleTable1", {
+                where: { currency: currencyValue },
+                page: { curr: 1 }
+            });
+        });
+
+        // 渲染表格
+        table.render({
+            elem: '#exampleTable1'
+            , data: mockData.tableData
+            , cols: [[
+                { field: 'id', title: 'ID' }
+                , { field: 'name', title: '名称' }
+                , { field: 'currency', title: '币种' }
+                , { field: 'status', title: '状态', templet: function(d) {
+                    return d.status === 1 ? '<span class="layui-badge layui-bg-green">启用</span>' : '<span class="layui-badge layui-bg-gray">禁用</span>';
+                }}
+            ]]
+            , page: true
+        });
+    })();
+
+    // ==================== 示例 2: 多筛选条件组合 ====================
+    (function() {
+        var template = document.getElementById('multiFilter-tpl').innerHTML;
+        var target = document.getElementById('multiFilter-view');
+
+        var filterData = {
+            statusList: [
+                { value: 0, text: '禁用' },
+                { value: 1, text: '启用' },
+                { value: 2, text: '审核中' }
+            ],
+            typeList: [
+                { value: 1, text: '单独' },
+                { value: 2, text: '轮询' },
+                { value: 3, text: '通道' }
+            ],
+            currencyList: mockData.currencies
+        };
+
+        // 渲染筛选条件
+        laytpl(template).render(filterData, function (html) {
+            target.innerHTML = html;
+            form.render();
+        });
+
+        // 监听筛选变化
+        var filterWhere = {};
+        form.on('select(statusFilter)', function (data) {
+            filterWhere.status = data.value;
+            table.reload('exampleTable2', { where: filterWhere, page: { curr: 1 } });
+        });
+        form.on('select(typeFilter)', function (data) {
+            filterWhere.type = data.value;
+            table.reload('exampleTable2', { where: filterWhere, page: { curr: 1 } });
+        });
+        form.on('select(currencyFilter)', function (data) {
+            filterWhere.currency = data.value;
+            table.reload('exampleTable2', { where: filterWhere, page: { curr: 1 } });
+        });
+
+        // 渲染表格
+        table.render({
+            elem: '#exampleTable2'
+            , data: mockData.tableData
+            , cols: [[
+                { field: 'id', title: 'ID' }
+                , { field: 'name', title: '名称' }
+                , { field: 'currency', title: '币种' }
+                , { field: 'type', title: '类型', templet: function(d) {
+                    return d.type === 1 ? '单独' : d.type === 2 ? '轮询' : '通道';
+                }}
+                , { field: 'status', title: '状态' }
+            ]]
+            , page: true
+        });
+    })();
+
+    // ==================== 示例 3: 表格列动态模板 ====================
+    (function() {
+        table.render({
+            elem: '#exampleTable3'
+            , data: mockData.tableData
+            , cols: [[
+                { field: 'id', title: 'ID' }
+                , { field: 'name', title: '名称' }
+                , { field: 'code', title: '代码' }
+                , { field: 'currency', title: '币种' }
+                , { field: 'status', title: '状态', templet: function(d) {
+                    return laytpl($('#statusBadge-tpl').html()).render(d);
+                }}
+                , { field: 'rateInfo', title: '费率', templet: function(d) {
+                    return laytpl($('#rateDisplay-tpl').html()).render(d);
+                }}
+                , { field: 'action', title: '操作', templet: function(d) {
+                    return laytpl($('#actionButtons-tpl').html()).render(d);
+                }}
+            ]]
+            , page: false
+            , skin: 'line'
+        });
+
+        // 监听表格工具条事件
+        table.on('tool(exampleTable3)', function(obj) {
+            var data = obj.data;
+            var event = obj.event;
+
+            if (event === 'edit') {
+                layer.msg('编辑: ' + data.name);
+            } else if (event === 'disable') {
+                layer.msg('禁用: ' + data.name);
+            } else if (event === 'enable') {
+                layer.msg('启用: ' + data.name);
+            }
+        });
+    })();
+
+});
+</script>
+
+</body>
+</html>
